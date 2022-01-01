@@ -1,61 +1,70 @@
-float min_speed = 50;
-float max_speed = 200;
+int min_size = 20;
+int max_size = 23;
+float min_speed = 1;
+float max_speed = 10;
+int trail_length = 255;
+float brush_size = 20;
+
 
 class Brush {
-    PVector brush_pos;
-    PVector prev_brush_pos = new PVector();
-    float brush_size;
+    
     color col;
     float speed;
+    PVector[] history;
 
-    Brush() {
-        this.brush_pos  = new PVector(random(0, width), random(0, height));
-        this.prev_brush_pos = this.brush_pos.copy();
-        this.brush_size = 2+10/this.brush_pos.dist(this.prev_brush_pos);
-        this.col = color(100, 100, 100);
-        this.speed = 0;
-    }
-
-    Brush(color col) {
-        this.brush_pos  = new PVector(random(0, width), random(0, height));
-        this.prev_brush_pos = this.brush_pos.copy();
-        this.brush_size = 2+10/(this.brush_pos.dist(this.prev_brush_pos));
+    Brush(color col, PVector init_position) {
         this.col = col;
-        this.speed = 0;
+        this.history = new PVector[trail_length];
+
+        for(int i=0; i<trail_length; i++) {
+            history[i] = new PVector(init_position.x, init_position.y);
+        }
     }
 
-    void draw() {
-        brush_size = 5+30/(1+brush_pos.dist(prev_brush_pos));
-        strokeWeight(brush_size);
-        stroke(col);
-        line(brush_pos.x, brush_pos.y, prev_brush_pos.x, prev_brush_pos.y);
-    }
+    void show() {
 
-    void move() {
-        speed = random(min_speed, max_speed);
-        prev_brush_pos.x = brush_pos.x;
-        prev_brush_pos.y = brush_pos.y;
-        // brush_pos.x += random(-speed, speed);
-        // brush_pos.y += random(-speed, speed);
-        brush_pos.x += (brush_pos.x+random(-speed, speed)-brush_pos.x)/5;
-        brush_pos.y += (brush_pos.y+random(-speed, speed)-brush_pos.y)/5;
+        if(this.isOutOfCanvas()) this.limit();
 
+        for(int i=0; i<trail_length; i++) {
+            fill(col, i);
+            
+            circle(this.history[i].x, this.history[i].y, map(i, 0, trail_length-1, 10, brush_size));
+        }
     }
 
     boolean isOutOfCanvas() {
-        return brush_pos.x<0 || brush_pos.y<0 || brush_pos.x>width || brush_pos.y>height;
+        return this.history[trail_length-1].x<0 || this.history[trail_length-1].y<0 || this.history[trail_length-1].x>width || this.history[trail_length-1].y>height;
     }
 
-    void wrap() {
+    void limit() {
         
-        if(brush_pos.x<0) brush_pos.x = 0;
-        if(brush_pos.y<0) brush_pos.y = 0;
-        if(brush_pos.x>width) brush_pos.x = width;
-        if(brush_pos.y>height) brush_pos.y = height;
+        if(this.history[trail_length-1].x<0) this.history[trail_length-1].x = 0;
+        if(this.history[trail_length-1].y<0) this.history[trail_length-1].y = 0;
+        if(this.history[trail_length-1].x>width) this.history[trail_length-1].x = width;
+        if(this.history[trail_length-1].y>height) this.history[trail_length-1].y = height;
         
     }
 
     void changeColor(color col) {
         this.col = col;
     }
+    
+
+    void move() {
+
+
+        speed = random(min_speed, max_speed);
+
+        this.history[trail_length-1].x += random(-speed, speed);
+        this.history[trail_length-1].y += random(-speed, speed);
+
+        
+
+        for(int i=0; i<trail_length-1; i++) {
+            this.history[i].x = this.history[i+1].x;
+            this.history[i].y = this.history[i+1].y;
+        }
+
+    }
+
 }

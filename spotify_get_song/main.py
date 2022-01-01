@@ -7,7 +7,7 @@ from urllib.request import urlopen
 import io
 from colorthief import ColorThief
 
-ACCESS_TOKEN = "BQA-arGjaq-J4e1cOCyfdjG4Nfc6eUHLSqDFDQLklBeoFBIoQ0RVymXq5P8hSTiq11vxdn2sEF6vih5x5cQ_mYt9_ebWcr9w_pOfnsF-4xkMcxMed_5K9987KNFxp6py9hBdV3hSDq7zS3yLCRFeHrZtK4SbzIuQHfAfpAlLFUUl7jmRitFR5yWNcj2_dJCM0FFs6p0IJqlmJfupwQk"
+ACCESS_TOKEN = "BQDxME0RVGZAUct7tifV-azhOOYZvYhQGBV0Y-WJhSHAq5ZBQaaba4hkuJkho5O3fgTAJa7jXTDzqtGPEj1dUGXDjsv1iowu3q-GM0IuistRbO6mZ8s42XVxaJnA82gV7vvaSj211kJoF1oujmR5KDHdz-TIfxc8XdFmhDoCYg4qnExOvchkqA0I8fxZs5M_ONtJre_QnF07Wws0LDs"
 SPOTIFY_GET_CURRENT_TRACK_URL = "https://api.spotify.com/v1/me/player/currently-playing"
 
 HOST = "127.0.0.1"

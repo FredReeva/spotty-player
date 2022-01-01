@@ -2,7 +2,7 @@ import processing.net.*;
 Server s;
 int PORT = 12000;
 
-color[] cols= {color(255, 255, 255),   color(0, 0, 0), color(0, 0, 0), color(0, 0, 0), color(0, 0, 0)};
+color[] cols= {color(255, 255, 255),   color(0, 0, 0), color(50, 50, 50), color(100, 100, 100), color(150, 150, 150)};
 
 int r,g,b;
 PImage album_img;
@@ -10,6 +10,7 @@ PImage album_img;
 int album_width = 400, album_height = 400;
 
 Brush[] brushes;
+
 int n_brushes;
 boolean album_has_changed = true;
 String old_input = null;
@@ -22,11 +23,12 @@ void setup() {
   background(cols[0]);
   imageMode(CENTER);
 
-  n_brushes = cols.length-1;
+  n_brushes = cols.length-1; // no bg color
 
   brushes = new Brush[n_brushes];
+
   for(int i=0; i<n_brushes; i++) {
-    brushes[i] = new Brush(cols[i+1]);
+    brushes[i] = new Brush(cols[i+1], new PVector(random(0,width), random(0,height)));
   }
 
 
@@ -35,21 +37,23 @@ void setup() {
 void draw() {
 
   getAlbumColors();
-
+  background(cols[0]);
+  
   for(int i=0; i<n_brushes; i++) {
+    
+    brushes[i].show();
     brushes[i].move();
-    if(brushes[i].isOutOfCanvas()) brushes[i].wrap();
-    brushes[i].draw();
     
   }
+  
 
   if(album_img!=null) image(album_img, width/2, height/2, album_width, album_height);
   if(album_has_changed) {
     background(cols[0]);
     for(int i=0; i<n_brushes; i++) {
       brushes[i].changeColor(cols[i+1]);
-      album_has_changed = false;
     }
+    album_has_changed = false;
   }
 }
 
