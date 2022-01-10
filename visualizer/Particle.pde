@@ -13,12 +13,10 @@ class Particle {
     }
 
     void show() {
-        stroke(this.col);
-        strokeWeight(10);
+        stroke(this.col,2);
+        strokeWeight(3);
         point(this.pos.x, this.pos.y);
-        // blendMode(ADD);
-        // tint(this.col);
-        // image(texture_img,this.pos.x,this.pos.y, 5, 5);
+        
     }
 
     void wrapEdges() {
@@ -50,13 +48,13 @@ class Particle {
         
     }
 
-    void followField(PVector[][] gradients) {
+    void followField(Gradient gradient_field) {
 
         
         int xGrid = constrain(floor(this.pos.x/scale), 0, floor(width/scale)-1);
         int yGrid = constrain(floor(this.pos.y/scale), 0, floor(height/scale)-1);
 
-        this.applyForce(gradients[xGrid][yGrid]);
+        this.applyForce(gradient_field.getVector(xGrid, yGrid));
     }
 
     void changeColor(color col) {

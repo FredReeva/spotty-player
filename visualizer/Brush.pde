@@ -6,26 +6,23 @@ class Brush {
     color col;
     
     PVector[] history;
-    PVector velocity;
-    PVector acceleration;
-    float xoff, yoff;
+    PVector vel;
+    PVector acc;
 
     Brush(color col, PVector init_position) {
         this.col = col;
         this.history = new PVector[trail_length];
-        this.xoff = init_position.x;
-        this.yoff = init_position.y;
-        this.velocity = new PVector(0,0);
-        this.acceleration = new PVector(0,0);
+
+        this.vel = new PVector(0,0);
+        this.acc = new PVector(0,0);
         
         for(int i=0; i<trail_length; i++) {
-            history[i] = new PVector(map(noise(xoff), 0, 1, 0, width), map(noise(yoff), 0, 1, 0, height));
+            history[i] = new PVector(map(noise(init_position.x), 0, 1, 0, width), map(noise(init_position.y), 0, 1, 0, height));
         }
         
     }
 
     void show() {
-
         
         noStroke();
         for(int i=0; i<trail_length; i++) {
@@ -59,16 +56,11 @@ class Brush {
 
     void move() {
 
-        // this.history[trail_length-1].x = map(noise(xoff), 0, 1, 0, width);
-        // this.history[trail_length-1].y = map(noise(yoff), 0, 1, 0, height);
-
-        // xoff += speed;
-        // yoff += speed;
-
-        this.velocity.add(this.acceleration);
-        this.velocity.limit(max_speed);
-        this.history[trail_length-1].add(this.velocity);
-        this.acceleration.mult(0);
+        this.acc.limit(max_acc);
+        this.vel.add(this.acc);
+        this.vel.limit(max_speed);
+        this.history[trail_length-1].add(this.vel);
+        this.acc.mult(0);
         
 
         for(int i=0; i<trail_length-1; i++) {
@@ -79,16 +71,15 @@ class Brush {
     }
 
     void applyForce(PVector force) { 
-        this.acceleration.add(force);
+        this.acc.add(force);
     }
 
-    void followField(PVector[][] gradients) {
+    void followField(Gradient gradient_field) {
 
-        
         int xGrid = constrain(floor(this.history[trail_length-1].x/scale), 0, floor(width/scale)-1);
         int yGrid = constrain(floor(this.history[trail_length-1].y/scale), 0, floor(height/scale)-1);
 
-        this.applyForce(gradients[xGrid][yGrid]);
+        this.applyForce(gradient_field.getVector(xGrid, yGrid));
     }
 
 }

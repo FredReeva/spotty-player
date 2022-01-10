@@ -3,11 +3,12 @@ import time
 import urllib.request
 from PIL import Image, ImageDraw
 import socket
+import json
 from urllib.request import urlopen
 import io
 from colorthief import ColorThief
 
-ACCESS_TOKEN = "BQAzHIjTFfhQ_Zuglm_DQmot0Jp0Fq1Y3eJ55LhusX1I6HBFdOV3Z6O4TQrZy0LYWvSr-V67Qa8ExZKV4z9O97fSal-fcA54-W5r0G-twHRAeDNS7IPBsEwuwN3PurtuQDi2Lw-eJe6Iz6U97wzCcogoA5MD4s6BDTBg6_z-82jWU5zeThDPAiS1ogeHspJIBdVsQ4dsvzHXdgy5mKI"
+ACCESS_TOKEN = "BQC1--Upb1NaU4R75WIhd86BurwJNgy2AyjbxF29bHPd2HXgs-IyGdyjbd9GB8QiK2OlY3W5ll-Lw3NI3bmRSOUHcbDBnQ0SNAjNdp_BwtvDm425Z8__UvEhTOJjEfNovFWuoFvGsSgFJeLq64V8b58zeX04C2wBaYLgZtw41aO-WfJ53hiwjHCNH6rPAKXQL8aVaXHPo9H_zChlCrQ"
 SPOTIFY_GET_CURRENT_TRACK_URL = "https://api.spotify.com/v1/me/player/currently-playing"
 
 HOST = "127.0.0.1"
@@ -72,7 +73,8 @@ def show_palette(palette):
 
 
 def send_data(sock, image_url, palette):
-    data = (str(palette) + "\n" + str(image_url)).encode()
+    data = {"image": str(image_url), "colors": str(palette)}
+    data = json.dumps(data).encode()
     sock.send(data)
 
 
