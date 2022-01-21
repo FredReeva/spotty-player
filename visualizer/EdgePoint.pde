@@ -33,7 +33,7 @@ class EdgePoint {
         this.force = this.desired.sub(this.vel);
    
         this.acc.add(force);
-        this.acc.limit(0.5);
+        this.acc.limit(5);
         this.vel.add(this.acc);
         this.vel.limit(10);
    

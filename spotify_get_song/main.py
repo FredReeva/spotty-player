@@ -1,5 +1,7 @@
+from turtle import update
 import requests
 import time
+import tensorflow as tf
 import urllib.request
 from PIL import Image, ImageDraw
 import socket
@@ -7,8 +9,9 @@ import json
 from urllib.request import urlopen
 import io
 from colorthief import ColorThief
+from style_transfer import style_transfer
 
-ACCESS_TOKEN = "BQC1--Upb1NaU4R75WIhd86BurwJNgy2AyjbxF29bHPd2HXgs-IyGdyjbd9GB8QiK2OlY3W5ll-Lw3NI3bmRSOUHcbDBnQ0SNAjNdp_BwtvDm425Z8__UvEhTOJjEfNovFWuoFvGsSgFJeLq64V8b58zeX04C2wBaYLgZtw41aO-WfJ53hiwjHCNH6rPAKXQL8aVaXHPo9H_zChlCrQ"
+ACCESS_TOKEN = "BQDotEodfcCBg6uC1K5FCdEVtnfz-fjxBlDgKW-P9bibQYFzRPB8toueNZgSSGwoeRlWpqjkQjsIPS5AxcqI_jhfyzYXUzy329X-u90Z5NRZBZux-KocR2JJmq08j-4L5TiB6FWKwn83_GyqPpmvDHNcrvigfzmv_-b30cCihZsleNgq1rzpjSn9iQ75b-svsSteIUBILHHMpKMc-qc"
 SPOTIFY_GET_CURRENT_TRACK_URL = "https://api.spotify.com/v1/me/player/currently-playing"
 
 HOST = "127.0.0.1"
@@ -78,8 +81,33 @@ def send_data(sock, image_url, palette):
     sock.send(data)
 
 
+# def recolor(art_path, palette):
+
+#     art_image = Image.open(art_path).convert("L")
+#     width, height = art_image.size
+#     new_image = Image.new(mode="RGB", size=(width, height))
+#     new_pixel_map = new_image.load()
+#     art_pixel_map = art_image.load()
+#     for x in range(width):
+#         for y in range(height):
+#             if art_pixel_map[x, y] < 50:
+#                 new_pixel_map[x, y] = palette[0]
+#             elif art_pixel_map[x, y] < 100:
+#                 new_pixel_map[x, y] = palette[1]
+#             elif art_pixel_map[x, y] < 150:
+#                 new_pixel_map[x, y] = palette[2]
+#             elif art_pixel_map[x, y] < 200:
+#                 new_pixel_map[x, y] = palette[3]
+#             elif art_pixel_map[x, y] < 255:
+#                 new_pixel_map[x, y] = palette[4]
+
+#     return new_image
+
+
 def main():
 
+    update_style_transfer = True
+    time_passed = 0
     current_track_id = None
     current_album_image = None
 
@@ -98,12 +126,41 @@ def main():
                     current_album_image = current_track_info["image"]
                     palette = get_palette(current_album_image)
 
-                    # album_image = get_image(current_track_info)
+                    album_image = get_image(current_track_info)
+                    album_image.save("images/album.png")
+                    update_style_transfer = True
+
                     # show_palette(palette)
 
-                    send_data(sock, current_album_image, palette)
+            if update_style_transfer:
+                # art_recolor = recolor("images/generated/canvas.png", palette)
+                # art_recolor.show()
+                # art_recolor.save("images/art/art_recolor.png")
+
+                content_path = (
+                    "images/generated/canvas.png"  # "images/art/art_recolor.png"
+                )
+                # style_path_url = (
+                #     current_album_image
+                # )
+                # style_path = tf.keras.utils.get_file(origin=style_path_url)
+                style_path_url = current_album_image
+                style_path = tf.keras.utils.get_file(origin=style_path_url)
+
+                if (style_path and content_path) != None:
+                    styled_image = style_transfer(style_path, content_path)
+                    styled_image.save("images/styled_album.png")
+
+                send_data(sock, current_album_image, palette)
 
             time.sleep(2)
+
+            # recalculate style transfer every 6 seconds
+            time_passed = time_passed + 1
+            if time_passed % 3 == 0:
+                update_style_transfer = True
+            else:
+                update_style_transfer = False
 
 
 if __name__ == "__main__":

@@ -72,8 +72,8 @@ class System {
             if(edgeImg!=null) image(edgeImg, width/2, height/2, width, height);
             loadPixels();
             count = 0;
-            for (int i = 0; i < (height); i++) {
-                for (int j = 0; j < (width); j++)
+            for (int i = 0; i < (height); i=i+2) {
+                for (int j = 0; j < (width); j=j+2)
                     if(pixels[i*width+j]>color(th_edge) && count<N) {
                     pixels[i*width+j] = color(0,255,0);
                     edge_points[count].assign(j,i);

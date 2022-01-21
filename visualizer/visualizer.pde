@@ -5,7 +5,7 @@ int PORT = 12000;
 color[] colors= {color(0, 0, 0),   color(255, 255, 255), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255)};
 
 int r,g,b;
-PImage album_img, edgeImg;
+PImage album_img, edgeImg, style_album_img;
 PImage texture_img;
 
 int album_width = 400, album_height = 400;
@@ -33,7 +33,7 @@ void setup() {
   
   texture_img = loadImage("texture.png", "png");
 
-  sys = new System(2);
+  sys = new System(1);
 
   
 
@@ -49,9 +49,18 @@ void draw() {
     album_has_changed = false;
   }
 
-  if(album_img!=null) image(edgeImg, width/2, height/2, width, height);
 
+  // if(album_img!=null) image(edgeImg, width/2, height/2, width, height);
   sys.drawSystem();
+  if(frameCount%100==0){
+    save("../images/generated/canvas.png");
+  }
+  
+  
+  if(style_album_img!=null) {
+    image(style_album_img, width/2, height/2, width, height);
+    
+  }
 
   if(album_img!=null) image(album_img, width/2, height/2, album_width, album_height);
   
@@ -76,7 +85,8 @@ void getAlbumColors() {
         String input_color_list = json_input.getString("colors"); // convert to array?
         String color_list = input_color_list.replaceAll("[^0-9,]", "");
     
-        album_img = loadImage(image_url, "png");
+        album_img = loadImage("../images/album.png", "png");
+        style_album_img = loadImage("../images/styled_album.png", "png");
         int[] color_values = int(split(color_list, ','));
         assignColors(color_values);
         edgeImg = getEdgesImage(album_img);

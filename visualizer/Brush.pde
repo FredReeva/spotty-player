@@ -57,6 +57,7 @@ class Brush {
     void move() {
 
         this.acc.limit(max_acc);
+        this.acc.rotate(PI/2);
         this.vel.add(this.acc);
         this.vel.limit(max_speed);
         this.history[trail_length-1].add(this.vel);
