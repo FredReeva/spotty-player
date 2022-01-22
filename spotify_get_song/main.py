@@ -9,9 +9,9 @@ import json
 from urllib.request import urlopen
 import io
 from colorthief import ColorThief
-from style_transfer import style_transfer
+import style_transfer as st
 
-ACCESS_TOKEN = "BQDotEodfcCBg6uC1K5FCdEVtnfz-fjxBlDgKW-P9bibQYFzRPB8toueNZgSSGwoeRlWpqjkQjsIPS5AxcqI_jhfyzYXUzy329X-u90Z5NRZBZux-KocR2JJmq08j-4L5TiB6FWKwn83_GyqPpmvDHNcrvigfzmv_-b30cCihZsleNgq1rzpjSn9iQ75b-svsSteIUBILHHMpKMc-qc"
+ACCESS_TOKEN = "BQDIkequpyO8lxpHFUa9X36hskl3QS7Y3NYY5W-Vsxp8KAKACrBekwikZv4CPew04izfjQhhruYDQfPipeoqq-aChp-68UqOfCyCVIzPDsUuTe7nmLSZjSyky8qXoLm_wBroh_5y2xVFenoVbMQgz5UnWKj5e5E_hhhO1WqSmxQJy6Nd91rL8K5ujd1Pi6oJAmADr2RCL1-hk4jm8nI"
 SPOTIFY_GET_CURRENT_TRACK_URL = "https://api.spotify.com/v1/me/player/currently-playing"
 
 HOST = "127.0.0.1"
@@ -111,6 +111,8 @@ def main():
     current_track_id = None
     current_album_image = None
 
+    model = st.load_model()
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect((HOST, PORT))  # connect to processing server
 
@@ -148,7 +150,9 @@ def main():
                 style_path = tf.keras.utils.get_file(origin=style_path_url)
 
                 if (style_path and content_path) != None:
-                    styled_image = style_transfer(style_path, content_path)
+                    styled_image = st.compute_styled_image(
+                        content_path, style_path, model
+                    )  # inverted content and style
                     styled_image.save("images/styled_album.png")
 
                 send_data(sock, current_album_image, palette)

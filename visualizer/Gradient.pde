@@ -1,5 +1,5 @@
-float sp = 0.05;
-float tsp = 0.005;
+float sp = 0.08;
+float tsp = 0.008;
 float ioff = 0;
 float joff = 0;
 float toff = 0;
@@ -35,7 +35,7 @@ class Gradient {
 
                 if(showGradients) {
                     strokeWeight(3);
-                    stroke(colors[floor(map(angle,-4*PI,4*PI,1, n_colors+1))]);
+                    stroke(map(angle,-4*PI,4*PI,100, 255));
                     pushMatrix();
                     translate(j*scale+scale, i*scale+scale);
                     rotate(gradients[i][j].heading());

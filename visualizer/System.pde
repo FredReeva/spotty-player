@@ -1,7 +1,7 @@
 int scale = 30;
-float max_speed = 1;
+float max_speed = 0.5;
 float max_acc = 0.01;
-int n_brushes = 40;
+int n_brushes = 20;
 int n_particles = 2000;
 
 int N = 30000;
