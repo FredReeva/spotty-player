@@ -4,14 +4,12 @@ int PORT = 12000;
 
 color[] colors= {color(0, 0, 0),   color(255, 255, 255), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255)};
 
-
-
 int r,g,b;
 PImage album_img, edgeImg, style_album_img, blurred_img;
 PImage texture_img;
 
 int album_width = 400, album_height = 400;
-
+boolean toggle_style_transfer = false;
 int n_colors = colors.length-1; // no bg color
 
 
@@ -20,15 +18,10 @@ boolean album_has_changed = true;
 String old_input = null;
 System sys;
 
-
+// edge detector filter
 float[][] kernel = {{ -1, -1, -1}, 
                     { -1,  8, -1}, 
                     { -1, -1, -1}};
-
-float v = 1.0 / 9.0;
-float[][] kernelBlur = {{ v, v, v }, 
-                    { v, v, v }, 
-                    { v, v, v }};
 
 void setup() {
   s = new Server(this, PORT);
@@ -41,8 +34,6 @@ void setup() {
   texture_img = loadImage("texture.png", "png");
 
   sys = new System(0);
-
-  
 
 }
 
@@ -57,18 +48,18 @@ void draw() {
     album_has_changed = false;
   }
 
-
   // if(album_img!=null) image(edgeImg, width/2, height/2, width, height); // edge image
 
   background(0);
   sys.drawSystem();
 
+  // image to be applied as content
   if(frameCount%200==0){
     save("../images/generated/canvas.png");
   }
   
   
-  if(style_album_img!=null) {
+  if(style_album_img!=null && toggle_style_transfer==true) {
     image(style_album_img, width/2, height/2, width, height);
     filter(BLUR, 3);
   }
@@ -145,5 +136,9 @@ PImage getEdgesImage(PImage img) {
   // State that there are changes to edgeImg.pixels[]
   edgeImg.updatePixels();
   return edgeImg;
+}
+
+void mouseClicked() {
+  toggle_style_transfer = !toggle_style_transfer;
 }
   

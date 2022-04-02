@@ -1,0 +1,9 @@
+# virtual environment folder
+cpc-env/
+
+# secrets
+.env
+
+# cache
+.cache
+__pycache__

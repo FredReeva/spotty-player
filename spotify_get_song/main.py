@@ -1,4 +1,3 @@
-from turtle import update
 import requests
 import time
 import tensorflow as tf
@@ -11,7 +10,7 @@ import io
 from colorthief import ColorThief
 import style_transfer as st
 
-ACCESS_TOKEN = "BQDIkequpyO8lxpHFUa9X36hskl3QS7Y3NYY5W-Vsxp8KAKACrBekwikZv4CPew04izfjQhhruYDQfPipeoqq-aChp-68UqOfCyCVIzPDsUuTe7nmLSZjSyky8qXoLm_wBroh_5y2xVFenoVbMQgz5UnWKj5e5E_hhhO1WqSmxQJy6Nd91rL8K5ujd1Pi6oJAmADr2RCL1-hk4jm8nI"
+ACCESS_TOKEN = "BQAgggbo5-ym660RhWKoba3R0EW7ERs8Uwa1r-3k2_YFV-r5zJaWehvJno5dqAOBmx9M_o5VOykHC3zt2M3rLoaeGn_3C1ivyCM3Pu1VT789xMPNC4WFGaNK57REwSxlzDCwJiDQ5B6e4S-gsWb7_ZjmbhczCzpsIdBwfoX07Mx4yBOXNZZc84XgKyypNglL4JX-ximvuWjqkfjQfvM"
 SPOTIFY_GET_CURRENT_TRACK_URL = "https://api.spotify.com/v1/me/player/currently-playing"
 
 HOST = "127.0.0.1"
@@ -19,6 +18,7 @@ PORT = 12000
 
 
 def get_current_track(access_token):
+    # TODO:manage errors!
     response = requests.get(
         SPOTIFY_GET_CURRENT_TRACK_URL,
         headers={"Authorization": f"Bearer {access_token}"},
