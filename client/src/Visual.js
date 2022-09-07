@@ -1,98 +1,102 @@
-import React, { useEffect, useRef } from 'react';
-import styled from 'styled-components';
-import * as THREE from 'three';
-import { DoubleSide } from 'three';
+import React from "react";
+import p5 from "p5"
 
-let StyledVisual = styled.div`
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-`;
+class Visual extends React.Component {
+  // let size = 20;
 
-// COLOR PALETTE
+  // const setup = (p5, canvasParentRef) => {
+  //   p5.createCanvas(p5.windowWidth, p5.windowHeight, p5.WEBGL).parent(canvasParentRef);
+  // };
 
-let mainColor = new THREE.Color(Math.random(), Math.random(), Math.random());
-mainColor = mainColor.getHSL(mainColor);
-mainColor = mainColor.setHSL(mainColor.h, 0.7, 0.5);
+  // const draw = (p5) => {
+  //   p5.frameRate(props.tempo / 60);
+  //   p5.background(props.colors[0]);
 
-let prevColor = mainColor.clone();
-prevColor = prevColor.getHSL(prevColor);
+  //   // if (props.playbackState) {
+  //   //   for (let i = 0; i < Math.ceil(p5.windowWidth / size); i++) {
+  //   //     for (let j = 0; j < Math.ceil(p5.windowHeight / size); j++) {
+  //   //       p5.fill(props.colors[Math.floor(Math.random() * 5)]);
+  //   //       p5.noStroke();
+  //   //       p5.square(size * i, size * j, size);
+  //   //     }
+  //   //   }
+  //   // }
 
-// THREE COMPONENTS
+  //   //p5.noStroke();
+    
+  //   // if (props.image) {
+  //   //   var image = 
+      
+      
+  //   // }
+  //   // const img  = p5.loadImage(props.image)
+  //   // p5.texture(img);
+  //   // p5.textureMode(p5.NORMAL);
+  //   p5.circle(0, 0, 200)
+    
+  // };
 
-let scene = new THREE.Scene();
-{
-    let color = '#000000';
-    let density = 0.01;
-    scene.fog = new THREE.FogExp2(color, density);
-}
-scene.background = new THREE.Color('#000000');
+  // const windowResized = (p5) => {
+  //   p5.resizeCanvas(p5.windowWidth, p5.windowHeight);
+  // };
 
+  constructor(props) {
+    super(props)
+    this.myRef = React.createRef()
+  }
 
+  Sketch = (p) => {
 
-// functions to generate and update the starfield
-function generateTrackObject() {
+      p.windowResized = () => {
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
+  };
+
+    p.setup = () => {
+      p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
+    }
+
+    p.draw = () => {
+      p.frameRate(60);
+      
   
-  var circle_geom = new THREE.CircleGeometry(30, 100);
-  var circle_mat = new THREE.MeshBasicMaterial({color: 0xffffff, side: DoubleSide});
-  var circle = new THREE.Mesh(circle_geom, circle_mat);
-  return circle
+      // if (props.playbackState) {
+      //   for (let i = 0; i < Math.ceil(p5.windowWidth / size); i++) {
+      //     for (let j = 0; j < Math.ceil(p5.windowHeight / size); j++) {
+      //       p5.fill(props.colors[Math.floor(Math.random() * 5)]);
+      //       p5.noStroke();
+      //       p5.square(size * i, size * j, size);
+      //     }
+      //   }
+      // }
+  
+      p.noStroke();
+      
+      if (this.props.image && p.frameCount%100==0) {
+        p.background(this.props.colors[0]);
+        var img  = p.loadImage(this.props.image)
+
+      }
+      p.circle(0, 0, 200)
+      if (this.props.image && p.frameCount%100==0) {
+        p.texture(img)
+
+      }
+    }
+ }
+
+
+  componentDidMount() {
+    this.myP5 = new p5(this.Sketch, this.myRef.current)
+  }
+
+  render () {
+    return (
+      <div ref={this.myRef}>
+
+      </div>
+    )
+  }
+  ;
 }
 
-
-const Visual = (props) => {
-    let mount = useRef(null);
-
-    // INITIALIZATION
-    useEffect(() => {
-        // THREE RENDERER
-
-        let winWidth = mount.current.clientWidth;
-        let winHeight = mount.current.clientHeight;
-
-        let camera = new THREE.PerspectiveCamera();
-        camera.position.set(0, 0, 0);
-        let target = new THREE.Vector3(0, 0, 50);
-        camera.lookAt(target);
-
-        let renderer = new THREE.WebGLRenderer({ alpha: true });
-        renderer.setSize(winWidth, winHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-
-        let handleResize = () => {
-            winWidth = mount.current.clientWidth;
-            winHeight = mount.current.clientHeight;
-            renderer.setSize(winWidth, winHeight);
-            camera.aspect = winWidth / winHeight;
-            camera.updateProjectionMatrix();
-        };
-
-        var trackObject = generateTrackObject();
-        trackObject.position.set( 0, 0, 100 );
-        let rotation = Math.PI
-        trackObject.rotateX(rotation)
-        scene.add(trackObject);
-
-
-        // ANIMATE
-
-        mount.current.appendChild(renderer.domElement);
-        window.addEventListener('resize', handleResize);
-
-        function animate() {
-            camera.lookAt(target);
-            rotation=0.01
-            trackObject.rotateX(rotation)
-
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-        animate();
-    }, []); // never update, executed one time only
-
-    return <StyledVisual className={props.className} ref={mount} />;
-};
-
-export default Visual;
+export default Visual

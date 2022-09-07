@@ -133,7 +133,7 @@ export default function Dashboard({ code }) {
           className="button"
           onClick={() => setShowImage(!showImage)}
         />
-        {showImage ? (
+        {/* {showImage ? (
           <img
             // crossOrigin={"anonymous"}
             ref={imgRef}
@@ -141,7 +141,7 @@ export default function Dashboard({ code }) {
             className="album-image"
             // onLoad={() => getPalette()}
           />
-        ) : null}
+        ) : null} */}
         <Visual
           className="visual"
           colors={palette}
