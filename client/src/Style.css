@@ -1,0 +1,41 @@
+
+.background {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.album-image {
+  position: absolute;
+  left: 50vw;
+  top: 50vh;
+  transform: translate(-50%, -50%);
+  border-radius: 3%;
+}
+
+.visual {
+  overflow: "hidden";
+  width: "100vw";
+  height: "100vh";
+}
+
+.button {
+  transition: 300ms;
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  height: 20px;
+  width: 20px;
+  border-radius: 20%;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+.button:hover {
+  transition: 300ms;
+  height: 30px;
+  width: 30px;
+  color: rgba(0, 0, 0, 0.8);
+}
