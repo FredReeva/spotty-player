@@ -50,7 +50,7 @@ export default function Dashboard({ code }) {
       // Handle rate limiting
       for (var pair of result.headers.entries()) {
         console.log("wait for...", pair[1]);
-        requestTime = 5000;
+        requestTime = 10000;
       }
     } else {
       requestTime = 1000;
@@ -85,7 +85,7 @@ export default function Dashboard({ code }) {
       spotifyApi
         .getMyCurrentPlayingTrack()
         .then((res) => {
-          if (res) setCurrentSong(res.body.item.id);
+          if (res) setCurrentSong(res.body.item);
         })
         .catch((err) => {
           console.log("Spotify session not found. Please play some music!");
@@ -106,7 +106,7 @@ export default function Dashboard({ code }) {
       });
 
     spotifyApi
-      .getAudioFeaturesForTrack(currentSong)
+      .getAudioFeaturesForTrack(currentSong.id)
       .then((res) => {
         setBpm(res.body.tempo);
       })
@@ -127,13 +127,12 @@ export default function Dashboard({ code }) {
   }, [imgUrl]);
 
   return (
-    
-      <FullScreen className="background" handle={handle}>
-        <IoImageOutline
+    <FullScreen className="background" handle={handle}>
+      {/* <IoImageOutline
           className="button"
           onClick={() => setShowImage(!showImage)}
-        />
-        {/* {showImage ? (
+        /> */}
+      {/* {showImage ? (
           <img
             // crossOrigin={"anonymous"}
             ref={imgRef}
@@ -142,15 +141,14 @@ export default function Dashboard({ code }) {
             // onLoad={() => getPalette()}
           />
         ) : null} */}
-        <Visual
-          className="visual"
-          colors={palette}
-          playbackState={playbackState}
-          tempo={bpm}
-          image={imgUrl}
-        ></Visual>
-      </FullScreen>
-
-
+      <Visual
+        className="visual"
+        song={currentSong}
+        colors={palette}
+        playbackState={playbackState}
+        tempo={bpm}
+        image={imgUrl}
+      ></Visual>
+    </FullScreen>
   );
 }

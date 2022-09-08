@@ -1,102 +1,78 @@
 import React from "react";
-import p5 from "p5"
+import p5 from "p5";
+import Song from "./components/SongObj";
 
 class Visual extends React.Component {
-  // let size = 20;
-
-  // const setup = (p5, canvasParentRef) => {
-  //   p5.createCanvas(p5.windowWidth, p5.windowHeight, p5.WEBGL).parent(canvasParentRef);
-  // };
-
-  // const draw = (p5) => {
-  //   p5.frameRate(props.tempo / 60);
-  //   p5.background(props.colors[0]);
-
-  //   // if (props.playbackState) {
-  //   //   for (let i = 0; i < Math.ceil(p5.windowWidth / size); i++) {
-  //   //     for (let j = 0; j < Math.ceil(p5.windowHeight / size); j++) {
-  //   //       p5.fill(props.colors[Math.floor(Math.random() * 5)]);
-  //   //       p5.noStroke();
-  //   //       p5.square(size * i, size * j, size);
-  //   //     }
-  //   //   }
-  //   // }
-
-  //   //p5.noStroke();
-    
-  //   // if (props.image) {
-  //   //   var image = 
-      
-      
-  //   // }
-  //   // const img  = p5.loadImage(props.image)
-  //   // p5.texture(img);
-  //   // p5.textureMode(p5.NORMAL);
-  //   p5.circle(0, 0, 200)
-    
-  // };
-
-  // const windowResized = (p5) => {
-  //   p5.resizeCanvas(p5.windowWidth, p5.windowHeight);
-  // };
-
   constructor(props) {
-    super(props)
-    this.myRef = React.createRef()
+    super(props);
+    this.myRef = React.createRef();
+    this.song = this.props.song;
   }
 
   Sketch = (p) => {
+    var current_song;
+    var song = [];
 
-      p.windowResized = () => {
-    p.resizeCanvas(p.windowWidth, p.windowHeight);
-  };
+    p.windowResized = () => {
+      p.resizeCanvas(p.windowWidth, p.windowHeight);
+    };
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-    }
+      current_song = "";
+      for (let i = 0; i < 10; i++) {
+        song[i] = new Song(
+          p,
+          [500 * Math.random() - 250, 500 * Math.random() - 250],
+          200 * Math.random()
+        );
+      }
+    };
 
     p.draw = () => {
       p.frameRate(60);
-      
-  
-      // if (props.playbackState) {
-      //   for (let i = 0; i < Math.ceil(p5.windowWidth / size); i++) {
-      //     for (let j = 0; j < Math.ceil(p5.windowHeight / size); j++) {
-      //       p5.fill(props.colors[Math.floor(Math.random() * 5)]);
-      //       p5.noStroke();
-      //       p5.square(size * i, size * j, size);
-      //     }
-      //   }
-      // }
-  
-      p.noStroke();
-      
-      if (this.props.image && p.frameCount%100==0) {
+
+      if (p.frameCount % 10 == 0) {
         p.background(this.props.colors[0]);
-        var img  = p.loadImage(this.props.image)
+        if (current_song != this.props.song.id) {
+          // here song has changed
 
+          for (let i = 0; i < 10; i++) {
+            song[i].loadImage(this.props.song);
+          }
+
+          current_song = this.props.song.id;
+        }
+
+        for (let i = 0; i < 10; i++) {
+          song[i].drawSong();
+        }
       }
-      p.circle(0, 0, 200)
-      if (this.props.image && p.frameCount%100==0) {
-        p.texture(img)
 
+      p.noStroke();
+
+      if (p.frameCount % 100 == 0) {
       }
-    }
- }
 
+      if (p.frameCount % 480 == 0) {
+        // execute every 120 frames (2 seconds)
+      }
+    };
+
+    p.mouseClicked = () => {
+      for (let i = 0; i < 10; i++) {
+        song[i].clicked();
+      }
+    };
+  };
 
   componentDidMount() {
-    this.myP5 = new p5(this.Sketch, this.myRef.current)
+    this.myP5 = new p5(this.Sketch, this.myRef.current);
   }
 
-  render () {
-    return (
-      <div ref={this.myRef}>
-
-      </div>
-    )
+  render() {
+    return <div ref={this.myRef}></div>;
   }
-  ;
 }
 
-export default Visual
+export default Visual;

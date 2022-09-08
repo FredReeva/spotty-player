@@ -1,18 +1,9 @@
-
 .background {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
-}
-
-.album-image {
-  position: absolute;
-  left: 50vw;
-  top: 50vh;
-  transform: translate(-50%, -50%);
-  border-radius: 3%;
 }
 
 .visual {
