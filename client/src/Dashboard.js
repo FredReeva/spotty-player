@@ -3,7 +3,7 @@ import useAuth from "./useAuth";
 import SpotifyWebApi from "spotify-web-api-node";
 import ColorThief from "colorthief";
 import Visual from "./Visual";
-import { IoImageOutline } from "react-icons/io5";
+
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import SpotifyPlayer from "react-spotify-web-playback";
 
@@ -18,6 +18,7 @@ export default function Dashboard({ code }) {
   const [imgUrl, setImgUrl] = useState("");
   const [bpm, setBpm] = useState(120);
   const [currentSong, setCurrentSong] = useState("");
+  const [queue, setQueue] = useState({});
   const [palette, setPalette] = useState([
     [255, 255, 255],
     [0, 0, 0],
@@ -37,8 +38,8 @@ export default function Dashboard({ code }) {
     setPalette(colorThief.getPalette(img, 6));
   };
 
-  const getPlaybackState = async () => {
-    const result = await fetch("https://api.spotify.com/v1/me/player", {
+  const getQueue = async () => {
+    const result = await fetch("https://api.spotify.com/v1/me/player/queue", {
       methot: "GET",
       headers: {
         Authorization: "Bearer " + accessToken,
@@ -55,7 +56,6 @@ export default function Dashboard({ code }) {
     } else {
       requestTime = 1000;
     }
-
     return response;
   };
 
@@ -74,13 +74,6 @@ export default function Dashboard({ code }) {
         .catch((err) => {
           console.log("something went wrong when getting playback state", err);
         });
-      // getPlaybackState()
-      //   .then((response) => {
-      //     console.log(response);
-      //   })
-      //   .catch((error) => {
-      //     console.error("No session found! Please press play");
-      //   });
 
       spotifyApi
         .getMyCurrentPlayingTrack()
@@ -90,9 +83,18 @@ export default function Dashboard({ code }) {
         .catch((err) => {
           console.log("Spotify session not found. Please play some music!");
         });
+
+      getQueue()
+        .then((res) => {
+          if (res) setQueue(res);
+        })
+        .catch((err) => {
+          console.log("something went wrong when getting the queue", err);
+        });
     }, requestTime);
   }, [accessToken]);
 
+  // Every few seconds check player state
   useEffect(() => {
     if (!accessToken) return;
     if (!currentSong) return;
@@ -144,6 +146,7 @@ export default function Dashboard({ code }) {
       <Visual
         className="visual"
         song={currentSong}
+        queue={queue}
         colors={palette}
         playbackState={playbackState}
         tempo={bpm}
