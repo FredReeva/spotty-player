@@ -22,7 +22,7 @@ class Visual extends React.Component {
 
     p.draw = () => {
       p.frameRate(60);
-      world.drawWorld(this.props.song, this.props.colors);
+      world.drawWorld(this.props.song, this.props.history, this.props.colors);
     };
 
     p.mouseClicked = () => {

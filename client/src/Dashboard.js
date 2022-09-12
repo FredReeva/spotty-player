@@ -19,6 +19,7 @@ export default function Dashboard({ code }) {
   const [bpm, setBpm] = useState(120);
   const [currentSong, setCurrentSong] = useState("");
   const [queue, setQueue] = useState({});
+  const [history, setHistory] = useState([]);
   const [palette, setPalette] = useState([
     [255, 255, 255],
     [0, 0, 0],
@@ -91,6 +92,20 @@ export default function Dashboard({ code }) {
         .catch((err) => {
           console.log("something went wrong when getting the queue", err);
         });
+
+      spotifyApi
+        .getMyRecentlyPlayedTracks({
+          limit: 20,
+        })
+        .then((res) => {
+          if (res) setHistory(res);
+        })
+        .catch((err) => {
+          console.log(
+            "something went wrong when getting the recently played",
+            err
+          );
+        });
     }, requestTime);
   }, [accessToken]);
 
@@ -146,7 +161,7 @@ export default function Dashboard({ code }) {
       <Visual
         className="visual"
         song={currentSong}
-        queue={queue}
+        history={history}
         colors={palette}
         playbackState={playbackState}
         tempo={bpm}

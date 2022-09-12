@@ -15,8 +15,11 @@ const scopes = [
   "user-read-currently-playing",
   "user-library-modify",
   "user-read-playback-state",
-  //"user-top-read",
+
   "user-modify-playback-state",
+  "user-read-recently-played",
+  "user-read-playback-position",
+  "user-top-read",
 ];
 
 const AUTH_URL = `${authEndpoint}?client_id=${clientId}&response_type=${responseType}&redirect_uri=${redirectUri}&scope=${scopes.join(
