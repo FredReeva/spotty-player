@@ -6,22 +6,20 @@ class Song {
     this.is_current_song = is_current_song;
   }
 
-  getTitle() {
-    return this.title;
-  }
-
-  getAlbum() {
-    return this.album;
-  }
-
-  getArtist() {
-    return this.artist;
-  }
-
   loadImage(response) {
     if (response) {
-      this.image = response.album.images[0].url;
-      this.img = this.draw_context.loadImage(this.image);
+      this.image = response.track.album.images[0].url;
+
+      this.img = this.draw_context.loadImage(
+        this.image,
+        (img) => {
+          this.loaded_img = img;
+        },
+        (err) => {
+          console.log("image not loaded", err);
+          this.loaded_img = "";
+        }
+      );
     } else {
       console.log("image not loaded yet...");
     }
@@ -29,6 +27,7 @@ class Song {
 
   drawSong() {
     this.draw_context.circle(this.pos[0], this.pos[1], this.size);
+    
     if (this.img) {
       this.draw_context.texture(this.img);
     }
