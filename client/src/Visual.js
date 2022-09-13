@@ -10,7 +10,6 @@ class Visual extends React.Component {
 
   Sketch = (p) => {
     var world;
-    var font;
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
@@ -18,13 +17,13 @@ class Visual extends React.Component {
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-      
+
       world = new World(p);
     };
 
     p.draw = () => {
       p.frameRate(60);
-      world.drawWorld(this.props.history, this.props.colors);
+      world.drawWorld(this.props.song, this.props.colors);
     };
 
     p.mouseClicked = () => {

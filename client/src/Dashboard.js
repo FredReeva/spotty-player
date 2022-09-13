@@ -52,10 +52,10 @@ export default function Dashboard({ code }) {
       // Handle rate limiting
       for (var pair of result.headers.entries()) {
         console.log("wait for...", pair[1]);
-        requestTime = 10000;
+        requestTime = 1000;
       }
     } else {
-      requestTime = 1000;
+      requestTime = 5000;
     }
     return response;
   };
@@ -67,19 +67,19 @@ export default function Dashboard({ code }) {
     console.log("got a token! have fun");
 
     setInterval(() => {
-      spotifyApi
-        .getMyCurrentPlaybackState()
-        .then((res) => {
-          if (res) setPlaybackState(res.body && res.body.is_playing);
-        })
-        .catch((err) => {
-          console.log("something went wrong when getting playback state", err);
-        });
+      // spotifyApi
+      //   .getMyCurrentPlaybackState()
+      //   .then((res) => {
+      //     if (res) setPlaybackState(res.body && res.body.is_playing);
+      //   })
+      //   .catch((err) => {
+      //     console.log("something went wrong when getting playback state", err);
+      //   });
 
       spotifyApi
         .getMyCurrentPlayingTrack()
         .then((res) => {
-          setCurrentSong(res.body.item.id);
+          setCurrentSong(res.body.item);
         })
         .catch((err) => {
           console.log("Spotify session not found. Please play some music!");
@@ -102,7 +102,7 @@ export default function Dashboard({ code }) {
       });
 
     spotifyApi
-      .getAudioFeaturesForTrack(currentSong)
+      .getAudioFeaturesForTrack(currentSong.id)
       .then((res) => {
         setBpm(res.body.tempo);
       })
@@ -110,20 +110,20 @@ export default function Dashboard({ code }) {
         console.log("something went wrong when getting track BPM", err);
       });
 
-    spotifyApi
-      .getMyRecentlyPlayedTracks({
-        limit: 20,
-      })
-      .then((res) => {
-        setHistory(res.body.items);
-        console.log("history update");
-      })
-      .catch((err) => {
-        console.log(
-          "something went wrong when getting the recently played",
-          err
-        );
-      });
+    // spotifyApi
+    //   .getMyRecentlyPlayedTracks({
+    //     limit: 20,
+    //   })
+    //   .then((res) => {
+    //     setHistory(res.body.items);
+    //     console.log("history update");
+    //   })
+    //   .catch((err) => {
+    //     console.log(
+    //       "something went wrong when getting the recently played",
+    //       err
+    //     );
+    //   });
   }, [accessToken, currentSong]);
 
   useEffect(() => {
@@ -154,8 +154,7 @@ export default function Dashboard({ code }) {
         ) : null} */}
       <Visual
         className="visual"
-        // song={currentSong}
-        history={history}
+        song={currentSong}
         colors={palette}
         playbackState={playbackState}
         tempo={bpm}
