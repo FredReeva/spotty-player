@@ -1,5 +1,5 @@
 class Song {
-  constructor(draw_context, position, size, is_current_song = false) {
+  constructor(draw_context, position, size) {
     this.draw_context = draw_context;
     this.pos = position;
     this.vel = draw_context.createVector(
@@ -12,7 +12,6 @@ class Song {
     );
 
     this.size = size;
-    this.is_current_song = is_current_song;
     this.n_x = 100 * Math.random() - 50;
     this.n_y = 100 * Math.random() - 50;
   }
@@ -37,9 +36,8 @@ class Song {
   }
 
   moveSong() {
-    this.acc.limit(0.001);
     this.vel.add(this.acc);
-    this.vel.limit(10);
+    this.vel.limit(100);
     this.pos.add(this.vel);
     this.acc.mult(0);
   }
@@ -52,26 +50,47 @@ class Song {
     }
   }
 
+  computeForce(ground) {
+    let direction = ground.pos.copy();
+
+    let force = direction.sub(this.pos);
+    force.mult(0.01);
+    if (this.checkIntersection(ground.pos, ground.size)) {
+      this.vel.mult(-1);
+    }
+
+    return force;
+  }
+
+  applyFriction(ground) {
+    if (this.checkIntersection(ground.pos, ground.size)) {
+      let friction = this.vel.copy();
+      friction.normalize();
+      friction.mult(-5);
+      //friction.setMag(this.vel.magSq() * 0.1);
+      this.applyForce(friction);
+    }
+  }
+
+  checkIntersection(vector, diameter) {
+    let dist = this.pos.dist(vector);
+
+    return dist < this.size / 2 + diameter / 2;
+  }
+
   applyForce(force) {
-    let f = force.copy();
-    f.div(this.size);
-    this.acc.add(f);
+    force.div(this.size);
+    this.acc.add(force);
   }
 
   songClick() {
-    var mouse_pos_orig = [
+    var mouse_pos_orig = this.draw_context.createVector(
       this.draw_context.mouseX - this.draw_context.windowWidth / 2,
-      this.draw_context.mouseY - this.draw_context.windowHeight / 2,
-    ];
-    let dist = this.draw_context.dist(
-      mouse_pos_orig[0],
-      mouse_pos_orig[1],
-      this.pos.x,
-      this.pos.y
+      this.draw_context.mouseY - this.draw_context.windowHeight / 2
     );
-    if (dist < this.size / 2) {
-      console.log("obj clicked");
-      //this.draw_context.translate(this.pos[0], this.pos[1], 0);
+
+    if (this.checkIntersection(mouse_pos_orig, 0)) {
+      console.log("mouse clicked on object");
     }
   }
 }
