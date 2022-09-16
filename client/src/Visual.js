@@ -27,7 +27,15 @@ class Visual extends React.Component {
     };
 
     p.mouseClicked = () => {
-      world.getMouseClick();
+      world.getMouseClicked();
+    };
+
+    p.mousePressed = () => {
+      world.getMousePressed();
+    };
+
+    p.mouseReleased = () => {
+      world.getMouseReleased();
     };
   };
 
