@@ -1,24 +1,28 @@
+import { cloneUniformsGroups } from "three";
+
 class Song {
-  constructor(id, draw_context, position, size) {
-    this.id = id;
+  constructor(curr_playing, draw_context, position, size) {
+    this.is_currently_playing = curr_playing;
     this.draw_context = draw_context;
-    this.collision_detected = false;
+    this.shadow_color = [0, 0, 0];
     this.show_tooltip = false;
+    this.mouse_hovering = false;
     this.text = this.draw_context.createGraphics(
       this.draw_context.windowWidth / 2,
       this.draw_context.windowHeight / 2
     );
+    this.border_alpha = 10;
     this.pos = position;
     this.dragging = false;
-    this.vel = draw_context.createVector(
+    this.vel = this.draw_context.createVector(
       this.draw_context.random(-2, 2),
       this.draw_context.random(-2, 2)
     );
-    this.acc = draw_context.createVector(
+    this.acc = this.draw_context.createVector(
       this.draw_context.random(-2, 2),
       this.draw_context.random(-2, 2)
     );
-    this.force = draw_context.createVector(0, 0);
+    this.force = this.draw_context.createVector(0, 0);
 
     this.size = size;
     this.n_x = 100 * Math.random() - 50;
@@ -35,7 +39,7 @@ class Song {
           this.loaded_img = img;
         },
         (err) => {
-          console.log("image not loaded", err);
+          console.log("error while loading image", err);
           this.loaded_img = "";
         }
       );
@@ -47,12 +51,11 @@ class Song {
   moveSong() {
     this.applyForce(this.force);
 
-    //this.vel.setMag(0);
-    if (this.acc.mag() < 0.1) this.acc.setMag(0);
-
+    //if (this.acc.mag() < 0.01) this.acc.setMag(0);
+    this.acc.limit(0.5);
     this.vel.add(this.acc);
-    if (this.vel.mag() < 0.1) this.vel.setMag(0);
-    this.vel.limit(0.8);
+    //if (this.vel.mag() < 0.001) this.vel.setMag(0);
+    this.vel.limit(0.3);
     this.pos.add(this.vel);
 
     this.acc.mult(0);
@@ -60,33 +63,66 @@ class Song {
   }
 
   drawSong() {
+    this.setShadow();
+
+    this.draw_context.fill(
+      this.shadow_color[0],
+      this.shadow_color[1],
+      this.shadow_color[2],
+      this.border_alpha
+    );
     this.draw_context.circle(this.pos.x, this.pos.y, this.size);
 
     if (this.img) {
       this.draw_context.texture(this.img);
     }
+
+    this.draw_context.circle(this.pos.x, this.pos.y, this.size - 10);
   }
 
-  computeCollision(other) {
-    if (this.checkIntersection(other.pos, other.size)) {
-      this.collision_detected = true;
-      let obj_pos = this.pos.copy();
-      let other_pos = other.pos.copy();
-      let distance_vec = obj_pos.sub(other_pos);
-
-      if (this.id !== 0) this.computeCorrectPosition(other);
-      this.vel.reflect(distance_vec);
-
-      this.applyCollisionFriction();
+  limitBorders() {
+    let border_top = -this.draw_context.windowHeight / 2;
+    let border_bottom = this.draw_context.windowHeight / 2;
+    if (this.pos.y < border_top) {
+      this.pos.y = border_top;
+    }
+    if (this.pos.y > border_bottom) {
+      this.pos.y = border_bottom;
     }
   }
 
+  computeInteraction(other) {
+    //this.repulsionForce(other);
+
+    if (this.checkIntersection(other.pos, other.size)) {
+      let obj_pos = this.pos.copy();
+      let distance_vec = obj_pos.sub(other.pos);
+
+      if (!this.is_currently_playing) this.computeCorrectPosition(other);
+      this.vel.reflect(distance_vec);
+      other.vel.reflect(distance_vec);
+
+      //this.applyCollisionFriction();
+    }
+    this.limitBorders();
+  }
+
+  // repulsionForce(other) {
+  //   let other_pos = other.pos.copy();
+  //   let obj_pos = this.pos.copy();
+  //   let repulsion_vector = other_pos.sub(obj_pos);
+  //   let dist = repulsion_vector.mag();
+  //   dist = dist - (other.size / 2 + this.size / 2);
+  //   repulsion_vector.normalize();
+  //   let mag = -1 / (Math.pow(dist, 2) + 1e-9);
+  //   let repulsion_force = repulsion_vector.setMag(mag);
+  //   this.force.add(repulsion_force);
+  // }
+
   gravitationalForce(attractor_mass) {
     let center_gravity = attractor_mass.pos.copy();
-    let obj_pos = this.pos.copy();
-    let grav_vector = center_gravity.sub(obj_pos);
-    let dist = grav_vector.mag();
-    grav_vector.normalize();
+    let grav_vector = center_gravity.sub(this.pos);
+    let dist = grav_vector.mag() - (attractor_mass.size / 2 + this.size / 2);
     let mag = (this.size * attractor_mass.size) / (dist + 1e-9);
     let grav_force = grav_vector.setMag(mag);
     this.force.add(grav_force);
@@ -101,29 +137,22 @@ class Song {
   }
 
   computeCorrectPosition(other) {
-    //let min_dist = this.size/2 + other.size/2
-    let other_pos = other.pos.copy();
-    let obj_pos = this.pos.copy();
-
     let collision_weight = other.size / (other.size + this.size);
+
     let collision_point = this.draw_context.constructor.Vector.lerp(
-      other_pos,
-      obj_pos,
+      other.pos,
+      this.pos,
       collision_weight
     );
 
-    let distance_vec_direction = this.draw_context.constructor.Vector.sub(
-      other_pos,
-      obj_pos
-    ).normalize();
-    let this_coll = distance_vec_direction.copy().setMag(-this.size / 2);
+    let vec_direction = this.draw_context.constructor.Vector.sub(
+      other.pos,
+      this.pos
+    )
+      .setMag(-this.size / 2)
+      .add(collision_point);
 
-    let this_vec = this.draw_context.constructor.Vector.add(
-      collision_point,
-      this_coll
-    );
-
-    this.pos.set(this_vec.x, this_vec.y);
+    this.pos.set(vec_direction.x, vec_direction.y);
   }
 
   applyCollisionFriction() {
@@ -179,9 +208,7 @@ class Song {
       this.draw_context.mouseY - this.draw_context.windowHeight / 2
     );
 
-    if (this.checkIntersection(mouse_pos_orig, 0)) {
-      //this.size = 300;
-    }
+    return this.checkIntersection(mouse_pos_orig, 0);
   }
   songPressed() {
     let mouse_pos_orig = this.draw_context.createVector(
@@ -205,16 +232,36 @@ class Song {
     }
   }
 
-  mouseOver() {
+  mouseOver(color) {
+    this.shadow_color = color;
     let mouse_pos_orig = this.draw_context.createVector(
       this.draw_context.mouseX - this.draw_context.windowWidth / 2,
       this.draw_context.mouseY - this.draw_context.windowHeight / 2
     );
 
     if (this.checkIntersection(mouse_pos_orig, 0)) {
+      this.mouse_hovering = true;
       this.show_tooltip = true;
     } else {
+      this.mouse_hovering = false;
+
       this.show_tooltip = false;
+    }
+  }
+
+  setShadow() {
+    if (this.mouse_hovering == true) {
+      if (this.border_alpha < 200) {
+        this.border_alpha += 10;
+      } else {
+        this.border_alpha = 200;
+      }
+    } else {
+      if (this.border_alpha > 100) {
+        this.border_alpha -= 10;
+      } else {
+        this.border_alpha = 100;
+      }
     }
   }
 }

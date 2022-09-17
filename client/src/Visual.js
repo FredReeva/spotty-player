@@ -6,10 +6,12 @@ class Visual extends React.Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
+    this.selected_song = "";
   }
 
   Sketch = (p) => {
     var world;
+    var cam;
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
@@ -17,17 +19,26 @@ class Visual extends React.Component {
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-
+      p.cursor("pointer");
+      cam = p.createCamera();
       world = new World(p);
     };
 
     p.draw = () => {
       p.frameRate(60);
-      world.drawWorld(this.props.song, this.props.colors);
+      world.drawWorld(
+        this.props.song,
+        this.props.recommendations,
+        this.props.colors,
+        cam
+      );
     };
 
     p.mouseClicked = () => {
-      world.getMouseClicked();
+      let selection = world.getMouseClicked();
+      if (selection) {
+        this.selected_song = selection;
+      }
     };
 
     p.mousePressed = () => {

@@ -4,12 +4,14 @@ class World {
   constructor(p5_ctx) {
     this.p5_ctx = p5_ctx;
     this.songs = [];
-    this.n_songs = 30;
+    this.n_songs = 40;
     this.current_song = "";
-    this.main_size = 300;
-    this.sizes = [200, 150];
+    this.main_size = this.p5_ctx.windowHeight / 2;
+    this.sizes = [200, 100];
     this.center_pos = this.p5_ctx.createVector(0, 0);
-    this.songs.push(new Song(0, this.p5_ctx, this.center_pos, this.main_size));
+    this.songs.push(
+      new Song(true, this.p5_ctx, this.center_pos, this.main_size)
+    );
     this.spawnWorld();
   }
 
@@ -20,7 +22,7 @@ class World {
       let song_pos = this.p5_ctx.createVector(0, 0);
 
       let song = new Song(
-        n,
+        false,
         this.p5_ctx,
         song_pos,
         this.sizes[Math.floor(Math.random() * this.sizes.length)]
@@ -31,28 +33,33 @@ class World {
     }
   }
 
-  drawWorld(playing, colors) {
-    if (this.p5_ctx.frameCount % 30 === 0 && playing && colors) {
-      this.p5_ctx.background(colors[0]);
-
+  drawWorld(playing, recommendations, colors, camera) {
+    this.p5_ctx.background(colors[0]);
+    if (
+      this.p5_ctx.frameCount % 20 === 0 &&
+      playing &&
+      colors &&
+      recommendations
+    ) {
+      this.songs.forEach((song_circle, index) => {
+        song_circle.mouseOver(colors[2]);
+      });
       if (this.current_song !== playing.id) {
         // here song has changed
 
         this.songs.forEach((song_circle, index) => {
-          song_circle.getSong(playing)
-          song_circle.loadImage();
           song_circle.pos.setMag(0);
+          if (index === 0) {
+            song_circle.getSong(playing);
+          } else {
+            song_circle.getSong(recommendations[index]);
+          }
+          song_circle.loadImage();
         });
 
         this.current_song = playing.id;
       }
-
-      this.songs.forEach((song_circle, index) => {
-        song_circle.mouseOver();
-      });
     }
-
-    this.p5_ctx.background(colors[0]);
 
     this.songs.forEach((song_circle, index) => {
       if (index !== 0) {
@@ -61,10 +68,9 @@ class World {
         song_circle.applyForce();
         song_circle.mouseMoveSong();
         song_circle.moveSong();
-        
       }
       for (let i = this.songs.length - 1; i >= 0; i--) {
-        if (i !== song_circle.id) song_circle.computeCollision(this.songs[i]);
+        if (i !== song_circle.id) song_circle.computeInteraction(this.songs[i]);
       }
       song_circle.displayTooltip();
       song_circle.drawSong();
@@ -81,7 +87,9 @@ class World {
 
   getMouseClicked() {
     for (let i = 1; i < this.n_songs; i++) {
-      this.songs[i].songClicked();
+      if (this.songs[i].songClicked()) {
+        return this.songs[i].song_infos.id
+      }
     }
   }
 

@@ -18,6 +18,9 @@ export default function Dashboard({ code }) {
   const [imgUrl, setImgUrl] = useState(null);
   const [bpm, setBpm] = useState(120);
   const [currentSong, setCurrentSong] = useState(null);
+  const [currentSongId, setCurrentSongId] = useState(null);
+  const [selctedSong, setSelectedSong] = useState(null);
+  const [recommendations, setRecommendations] = useState(null);
   const [queue, setQueue] = useState(null);
   const [history, setHistory] = useState(null);
   const [palette, setPalette] = useState([
@@ -79,7 +82,7 @@ export default function Dashboard({ code }) {
       spotifyApi
         .getMyCurrentPlayingTrack()
         .then((res) => {
-          setCurrentSong(res.body.item);
+          setCurrentSongId(res.body.item.id);
         })
         .catch((err) => {
           console.log("Spotify session not found. Please play some music!");
@@ -90,25 +93,42 @@ export default function Dashboard({ code }) {
   // Every few seconds check player state
   useEffect(() => {
     if (!accessToken) return;
-    if (!currentSong) return;
+    if (!currentSongId) return;
+
+    spotifyApi
+      .getRecommendations({
+        seed_tracks: [currentSongId],
+        limit: 50,
+      })
+      .then((res) => {
+        console.log("getting recommendations...");
+        setRecommendations(res.body.tracks);
+      })
+      .catch((err) => {
+        console.log(
+          "Something went wrong when getting recommended tracks",
+          err
+        );
+      });
 
     spotifyApi
       .getMyCurrentPlayingTrack()
       .then((res) => {
+        setCurrentSong(res.body.item);
         setImgUrl(res.body.item.album.images[1].url);
       })
       .catch((err) => {
         console.log("something went wrong when getting album url", err);
       });
 
-    spotifyApi
-      .getAudioFeaturesForTrack(currentSong.id)
-      .then((res) => {
-        setBpm(res.body.tempo);
-      })
-      .catch((err) => {
-        console.log("something went wrong when getting track BPM", err);
-      });
+    // spotifyApi
+    //   .getAudioFeaturesForTrack(currentSongId)
+    //   .then((res) => {
+    //     setBpm(res.body.tempo);
+    //   })
+    //   .catch((err) => {
+    //     console.log("something went wrong when getting track BPM", err);
+    //   });
 
     // spotifyApi
     //   .getMyRecentlyPlayedTracks({
@@ -124,7 +144,7 @@ export default function Dashboard({ code }) {
     //       err
     //     );
     //   });
-  }, [accessToken, currentSong]);
+  }, [accessToken, currentSongId]);
 
   useEffect(() => {
     if (!imgUrl) return;
@@ -155,9 +175,9 @@ export default function Dashboard({ code }) {
       <Visual
         className="visual"
         song={currentSong}
+        recommendations={recommendations}
         colors={palette}
         playbackState={playbackState}
-        tempo={bpm}
       ></Visual>
     </FullScreen>
   );
