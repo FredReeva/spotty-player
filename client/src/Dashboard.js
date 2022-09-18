@@ -2,10 +2,12 @@ import React, { useState, useEffect, createRef } from "react";
 import useAuth from "./useAuth";
 import SpotifyWebApi from "spotify-web-api-node";
 import ColorThief from "colorthief";
-import Visual from "./Visual";
+import Visual from "./components/Visual";
+import History from "./components/History";
 
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import SpotifyPlayer from "react-spotify-web-playback";
+import { Button } from "react-bootstrap";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: "73854ecdce60489882e698ace37f458d",
@@ -16,13 +18,15 @@ var requestTime = 1000;
 export default function Dashboard({ code }) {
   const handle = useFullScreenHandle();
   const [imgUrl, setImgUrl] = useState(null);
+  const [view, setView] = useState("world");
   const [bpm, setBpm] = useState(120);
   const [currentSong, setCurrentSong] = useState(null);
+  const [currentView, setCurrentView] = useState(true);
   const [currentSongId, setCurrentSongId] = useState(null);
   const [selctedSong, setSelectedSong] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
   const [queue, setQueue] = useState(null);
-  const [history, setHistory] = useState(null);
+  const [history, setHistory] = useState([]);
   const [palette, setPalette] = useState([
     [255, 255, 255],
     [0, 0, 0],
@@ -144,6 +148,9 @@ export default function Dashboard({ code }) {
     //       err
     //     );
     //   });
+    console.log(currentSongId);
+
+    setHistory([...history, currentSong]);
   }, [accessToken, currentSongId]);
 
   useEffect(() => {
@@ -157,28 +164,57 @@ export default function Dashboard({ code }) {
     image.crossOrigin = "Anonymous";
   }, [imgUrl]);
 
+  useEffect(() => {
+    if (!recommendations) return;
+
+    let playback_queue = recommendations
+      .filter((song) => song.id !== selctedSong)
+      .map((song) => "spotify:track:" + song.id);
+
+    playback_queue.splice(0, 0, "spotify:track:" + selctedSong);
+    spotifyApi
+      .play({
+        uris: playback_queue,
+      })
+      .then(
+        function () {
+          console.log("Playback started");
+        },
+        function (err) {
+          //if the user making the request is non-premium, a 403 FORBIDDEN response code will be returned
+          console.log("Something went wrong!", err);
+        }
+      );
+  }, [selctedSong]);
+
   return (
     <FullScreen className="background" handle={handle}>
-      {/* <IoImageOutline
-          className="button"
-          onClick={() => setShowImage(!showImage)}
-        /> */}
-      {/* {showImage ? (
-          <img
-            // crossOrigin={"anonymous"}
-            ref={imgRef}
-            src={imgUrl}
-            className="album-image"
-            // onLoad={() => getPalette()}
-          />
-        ) : null} */}
-      <Visual
-        className="visual"
-        song={currentSong}
-        recommendations={recommendations}
-        colors={palette}
-        playbackState={playbackState}
-      ></Visual>
+      <Button
+        className="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setCurrentView(!currentView);
+        }}
+      />
+      {/* <Button className="button" onClick={() => setView("world")} /> */}
+      {currentView ? (
+        <History
+          className="visual"
+          song={currentSong}
+          history={history}
+          colors={palette}
+          playbackState={playbackState}
+        ></History>
+      ) : (
+        <Visual
+          className="visual"
+          song={currentSong}
+          recommendations={recommendations}
+          colors={palette}
+          playbackState={playbackState}
+          setSelSong={setSelectedSong}
+        ></Visual>
+      )}
     </FullScreen>
   );
 }

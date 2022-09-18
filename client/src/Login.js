@@ -15,7 +15,8 @@ const scopes = [
   "user-read-currently-playing",
   "user-library-modify",
   "user-read-playback-state",
-
+  "app-remote-control",
+  "streaming",
   "user-modify-playback-state",
   "user-read-recently-played",
   "user-read-playback-position",

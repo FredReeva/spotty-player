@@ -192,25 +192,33 @@ class Song {
     // }
   }
 
-  mouseMoveSong() {
-    var mouse_pos_orig = this.draw_context.createVector(
-      this.draw_context.mouseX - this.draw_context.windowWidth / 2,
-      this.draw_context.mouseY - this.draw_context.windowHeight / 2
-    );
-    if (this.dragging) {
-      this.pos = mouse_pos_orig;
-    }
-  }
+  // mouseMoveSong() {
+  //   var mouse_pos_orig = this.draw_context.createVector(
+  //     this.draw_context.mouseX - this.draw_context.windowWidth / 2,
+  //     this.draw_context.mouseY - this.draw_context.windowHeight / 2
+  //   );
+
+  //   if (this.dragging) {
+  //     console.log("dragging");
+  //     // var offset = this.draw_context.constructor.Vector.sub(
+  //     //   this.pos,
+  //     //   mouse_pos_orig
+  //     // );
+
+  //   }
+  // }
 
   songClicked() {
-    let mouse_pos_orig = this.draw_context.createVector(
-      this.draw_context.mouseX - this.draw_context.windowWidth / 2,
-      this.draw_context.mouseY - this.draw_context.windowHeight / 2
-    );
+    if (this.dragging == false) {
+      let mouse_pos_orig = this.draw_context.createVector(
+        this.draw_context.mouseX - this.draw_context.windowWidth / 2,
+        this.draw_context.mouseY - this.draw_context.windowHeight / 2
+      );
 
-    return this.checkIntersection(mouse_pos_orig, 0);
+      return this.checkIntersection(mouse_pos_orig, 0);
+    }
   }
-  songPressed() {
+  songDragged() {
     let mouse_pos_orig = this.draw_context.createVector(
       this.draw_context.mouseX - this.draw_context.windowWidth / 2,
       this.draw_context.mouseY - this.draw_context.windowHeight / 2
@@ -218,19 +226,20 @@ class Song {
 
     if (this.checkIntersection(mouse_pos_orig, 0)) {
       this.dragging = true;
+      this.pos = mouse_pos_orig;
     }
   }
 
-  songReleased() {
-    let mouse_pos_orig = this.draw_context.createVector(
-      this.draw_context.mouseX - this.draw_context.windowWidth / 2,
-      this.draw_context.mouseY - this.draw_context.windowHeight / 2
-    );
+  // songReleased() {
+  //   let mouse_pos_orig = this.draw_context.createVector(
+  //     this.draw_context.mouseX - this.draw_context.windowWidth / 2,
+  //     this.draw_context.mouseY - this.draw_context.windowHeight / 2
+  //   );
 
-    if (this.checkIntersection(mouse_pos_orig, 0)) {
-      this.dragging = false;
-    }
-  }
+  //   if (this.checkIntersection(mouse_pos_orig, 0)) {
+  //     this.dragging = false;
+  //   }
+  // }
 
   mouseOver(color) {
     this.shadow_color = color;

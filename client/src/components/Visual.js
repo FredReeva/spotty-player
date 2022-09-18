@@ -1,6 +1,6 @@
 import React from "react";
 import p5 from "p5";
-import World from "./components/World";
+import World from "./World";
 
 class Visual extends React.Component {
   constructor(props) {
@@ -11,7 +11,6 @@ class Visual extends React.Component {
 
   Sketch = (p) => {
     var world;
-    var cam;
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
@@ -20,7 +19,7 @@ class Visual extends React.Component {
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
       p.cursor("pointer");
-      cam = p.createCamera();
+
       world = new World(p);
     };
 
@@ -29,29 +28,28 @@ class Visual extends React.Component {
       world.drawWorld(
         this.props.song,
         this.props.recommendations,
-        this.props.colors,
-        cam
+        this.props.colors
       );
     };
 
     p.mouseClicked = () => {
       let selection = world.getMouseClicked();
       if (selection) {
-        this.selected_song = selection;
+        this.props.setSelSong(selection);
       }
     };
 
-    p.mousePressed = () => {
-      world.getMousePressed();
-    };
-
-    p.mouseReleased = () => {
-      world.getMouseReleased();
+    p.mouseDragged = () => {
+      world.getMouseDragged();
     };
   };
 
   componentDidMount() {
     this.myP5 = new p5(this.Sketch, this.myRef.current);
+  }
+
+  componentWillUnmount() {
+    this.myP5.remove();
   }
 
   render() {

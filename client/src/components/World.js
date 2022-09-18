@@ -2,6 +2,7 @@ import Song from "./SongObj";
 
 class World {
   constructor(p5_ctx) {
+    this.is_current_view = false;
     this.p5_ctx = p5_ctx;
     this.songs = [];
     this.n_songs = 40;
@@ -33,7 +34,7 @@ class World {
     }
   }
 
-  drawWorld(playing, recommendations, colors, camera) {
+  drawWorld(playing, recommendations, colors) {
     this.p5_ctx.background(colors[0]);
     if (
       this.p5_ctx.frameCount % 20 === 0 &&
@@ -66,7 +67,7 @@ class World {
         song_circle.gravitationalForce(this.songs[0]);
         song_circle.applyFriction();
         song_circle.applyForce();
-        song_circle.mouseMoveSong();
+        //song_circle.mouseMoveSong();
         song_circle.moveSong();
       }
       for (let i = this.songs.length - 1; i >= 0; i--) {
@@ -79,25 +80,25 @@ class World {
     this.p5_ctx.noStroke();
   }
 
-  getMousePressed() {
+  getMouseDragged() {
     for (let i = 1; i < this.n_songs; i++) {
-      this.songs[i].songPressed();
+      this.songs[i].songDragged();
     }
   }
 
   getMouseClicked() {
     for (let i = 1; i < this.n_songs; i++) {
-      if (this.songs[i].songClicked()) {
-        return this.songs[i].song_infos.id
+      if (this.songs[i].songClicked() && this.songs[i].song_infos) {
+        return this.songs[i].song_infos.id;
       }
     }
   }
 
-  getMouseReleased() {
-    for (let i = 1; i < this.n_songs; i++) {
-      this.songs[i].songReleased();
-    }
-  }
+  // getMouseReleased() {
+  //   for (let i = 1; i < this.n_songs; i++) {
+  //     this.songs[i].songReleased();
+  //   }
+  // }
 }
 
 export default World;
