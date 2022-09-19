@@ -25,9 +25,11 @@ class History extends React.Component {
     };
 
     p.draw = () => {
+      p.orbitControl();
       p.frameRate(60);
       timeline.drawTimeline(
         this.props.song,
+        this.props.valenceEnergy,
         this.props.history,
         this.props.colors,
         cam

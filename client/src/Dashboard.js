@@ -19,9 +19,9 @@ export default function Dashboard({ code }) {
   const handle = useFullScreenHandle();
   const [imgUrl, setImgUrl] = useState(null);
   const [view, setView] = useState("world");
-  const [bpm, setBpm] = useState(120);
+  const [valEn, setValEn] = useState([0, 0, 0]);
   const [currentSong, setCurrentSong] = useState(null);
-  const [currentView, setCurrentView] = useState(true);
+  const [viewHistory, setViewHistory] = useState(false);
   const [currentSongId, setCurrentSongId] = useState(null);
   const [selctedSong, setSelectedSong] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
@@ -125,14 +125,14 @@ export default function Dashboard({ code }) {
         console.log("something went wrong when getting album url", err);
       });
 
-    // spotifyApi
-    //   .getAudioFeaturesForTrack(currentSongId)
-    //   .then((res) => {
-    //     setBpm(res.body.tempo);
-    //   })
-    //   .catch((err) => {
-    //     console.log("something went wrong when getting track BPM", err);
-    //   });
+    spotifyApi
+      .getAudioFeaturesForTrack(currentSongId)
+      .then((res) => {
+        setValEn([res.body.valence, res.body.energy, res.body.danceability]);
+      })
+      .catch((err) => {
+        console.log("something went wrong when getting track features", err);
+      });
 
     // spotifyApi
     //   .getMyRecentlyPlayedTracks({
@@ -152,8 +152,6 @@ export default function Dashboard({ code }) {
     if (currentSong) {
       setHistory([...history, currentSong]);
     }
-
-    console.log(history);
   }, [accessToken, currentSongId]);
 
   useEffect(() => {
@@ -196,17 +194,17 @@ export default function Dashboard({ code }) {
         className="button"
         onClick={(e) => {
           e.stopPropagation();
-          setCurrentView(!currentView);
+          setViewHistory(!viewHistory);
         }}
       />
       {/* <Button className="button" onClick={() => setView("world")} /> */}
-      {currentView ? (
+      {viewHistory ? (
         <History
           className="visual"
           song={currentSong}
           history={history}
           colors={palette}
-          playbackState={playbackState}
+          valenceEnergy={valEn}
         ></History>
       ) : (
         <Visual

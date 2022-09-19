@@ -1,5 +1,3 @@
-import { cloneUniformsGroups } from "three";
-
 class Song {
   constructor(curr_playing, draw_context, position, size) {
     this.is_currently_playing = curr_playing;

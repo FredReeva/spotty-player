@@ -1,4 +1,4 @@
-import Song from "./SongObj";
+import Song3d from "./Song3d";
 
 class Timeline {
   constructor(p5_ctx) {
@@ -7,52 +7,56 @@ class Timeline {
     this.n_songs = 30;
     this.current_song = "";
     this.main_size = 100;
-    this.start_pos = this.p5_ctx.createVector(
-      -this.p5_ctx.windowWidth / 2 + this.main_size / 2,
-      -this.p5_ctx.windowHeight / 2 + this.main_size / 2
-    );
-    this.initTimeline();
+    //this.initTimeline();
   }
 
-  initTimeline() {
-    let n = 0;
-
-    let width_elems = Math.floor(this.p5_ctx.windowWidth / this.main_size);
-
-    while (n < this.n_songs) {
-      let song_pos = this.start_pos.copy();
-      let pos_x = this.start_pos.x + (n % width_elems) * this.main_size;
-
-      song_pos.set(pos_x, this.start_pos.y);
-
-      let song = new Song(false, this.p5_ctx, song_pos, this.main_size);
-
-      this.songs.push(song);
-      n++;
-    }
-  }
-
-  drawTimeline(playing, past_songs, colors) {
+  drawTimeline(playing, val_en, past_songs, colors) {
     this.p5_ctx.background(colors[0]);
+    this.p5_ctx.ambientMaterial(250);
+    this.p5_ctx.cylinder(10, this.p5_ctx.windowHeight);
+    this.p5_ctx.rotate(Math.PI / 2);
+    this.p5_ctx.cylinder(10, this.p5_ctx.windowHeight);
     if (this.p5_ctx.frameCount % 20 === 0 && playing && colors && past_songs) {
       // this.songs.forEach((song_circle, index) => {
       //   song_circle.mouseOver(colors[2]);
       // });
+
       if (this.current_song !== playing.id) {
-        // here song has changed
+        let valence = this.p5_ctx.map(
+          val_en[0],
+          0,
+          1,
+          -this.p5_ctx.windowWidth / 2,
+          this.p5_ctx.windowWidth / 2
+        );
+        let energy = this.p5_ctx.map(
+          val_en[1],
+          0,
+          1,
+          this.p5_ctx.windowHeight / 2,
+          -this.p5_ctx.windowHeight / 2
+        );
 
-        for (let i = 0; i < past_songs.length; i++) {
-          this.songs[i].getSong(past_songs[i]);
-          this.songs[i].loadImage();
-        }
+        let dance = this.p5_ctx.map(
+          val_en[2],
+          0,
+          1,
+          -this.p5_ctx.windowWidth / 2,
+          this.p5_ctx.windowWidth / 2
+        );
 
-        this.songs[past_songs.length].getSong(playing);
-        this.songs[past_songs.length].loadImage();
+        let song_pos = this.p5_ctx.createVector(valence, energy, dance);
+        let song = new Song3d(false, this.p5_ctx, song_pos, this.main_size);
+
+        song.getSong(playing);
+        song.loadImage();
+
+        this.songs.push(song);
         this.current_song = playing.id;
       }
     }
 
-    for (let i = 0; i < past_songs.length + 1; i++) {
+    for (let i = 0; i < this.songs.length; i++) {
       //song_circle.displayTooltip();
       this.songs[i].drawSong();
     }
