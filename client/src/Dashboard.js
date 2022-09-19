@@ -148,9 +148,12 @@ export default function Dashboard({ code }) {
     //       err
     //     );
     //   });
-    console.log(currentSongId);
 
-    setHistory([...history, currentSong]);
+    if (currentSong) {
+      setHistory([...history, currentSong]);
+    }
+
+    console.log(history);
   }, [accessToken, currentSongId]);
 
   useEffect(() => {

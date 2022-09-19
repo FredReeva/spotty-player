@@ -9,7 +9,7 @@ class Timeline {
     this.main_size = 100;
     this.start_pos = this.p5_ctx.createVector(
       -this.p5_ctx.windowWidth / 2 + this.main_size / 2,
-      -this.p5_ctx.windowheight / 2 + this.main_size / 2
+      -this.p5_ctx.windowHeight / 2 + this.main_size / 2
     );
     this.initTimeline();
   }
@@ -17,9 +17,13 @@ class Timeline {
   initTimeline() {
     let n = 0;
 
+    let width_elems = Math.floor(this.p5_ctx.windowWidth / this.main_size);
+
     while (n < this.n_songs) {
       let song_pos = this.start_pos.copy();
-      song_pos.set(n * 100 - 500, 0);
+      let pos_x = this.start_pos.x + (n % width_elems) * this.main_size;
+
+      song_pos.set(pos_x, this.start_pos.y);
 
       let song = new Song(false, this.p5_ctx, song_pos, this.main_size);
 
@@ -31,30 +35,27 @@ class Timeline {
   drawTimeline(playing, past_songs, colors) {
     this.p5_ctx.background(colors[0]);
     if (this.p5_ctx.frameCount % 20 === 0 && playing && colors && past_songs) {
-      this.songs.forEach((song_circle, index) => {
-        song_circle.mouseOver(colors[2]);
-      });
+      // this.songs.forEach((song_circle, index) => {
+      //   song_circle.mouseOver(colors[2]);
+      // });
       if (this.current_song !== playing.id) {
         // here song has changed
 
         for (let i = 0; i < past_songs.length; i++) {
           this.songs[i].getSong(past_songs[i]);
-
           this.songs[i].loadImage();
         }
 
         this.songs[past_songs.length].getSong(playing);
-
         this.songs[past_songs.length].loadImage();
-
         this.current_song = playing.id;
       }
     }
 
-    this.songs.forEach((song_circle, index) => {
-      song_circle.displayTooltip();
-      song_circle.drawSong();
-    });
+    for (let i = 0; i < past_songs.length + 1; i++) {
+      //song_circle.displayTooltip();
+      this.songs[i].drawSong();
+    }
 
     this.p5_ctx.noStroke();
   }

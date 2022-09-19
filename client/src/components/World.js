@@ -19,8 +19,13 @@ class World {
   spawnWorld() {
     let n = 1;
 
+    let size = this.sizes[1];
     while (n < this.n_songs) {
       let song_pos = this.p5_ctx.createVector(0, 0);
+
+      if (n >= 10) {
+        size = this.sizes[0];
+      }
 
       let song = new Song(
         false,
