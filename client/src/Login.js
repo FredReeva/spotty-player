@@ -1,5 +1,6 @@
 import React from "react";
-import { Container } from "react-bootstrap";
+import styled from "styled-components";
+import Visual from "./components/Visual";
 
 export const authEndpoint = "https://accounts.spotify.com/authorize";
 
@@ -29,13 +30,18 @@ const AUTH_URL = `${authEndpoint}?client_id=${clientId}&response_type=${response
 
 export default function Login() {
   return (
-    <Container
-      className="d-flex justify-content-center align-items-center"
-      style={{ minHeight: "100vh" }}
-    >
-      <a className="btn btn-success btn-lg" href={AUTH_URL}>
-        Login
+    <div className="container">
+      <div className="blurred-panel">
+        <Visual
+          className="visual"
+          song={""}
+          recommendations={""}
+          colors={[60, 250, 250]}
+        ></Visual>
+      </div>
+      <a className="button" href={AUTH_URL}>
+        LOG IN
       </a>
-    </Container>
+    </div>
   );
 }

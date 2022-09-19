@@ -7,7 +7,7 @@ class World {
     this.songs = [];
     this.n_songs = 40;
     this.current_song = "";
-    this.main_size = this.p5_ctx.windowHeight / 2;
+    this.main_size = (2 * this.p5_ctx.windowHeight) / 3;
     this.sizes = [200, 100];
     this.center_pos = this.p5_ctx.createVector(0, 0);
     this.songs.push(

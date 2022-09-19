@@ -4,10 +4,10 @@ import SpotifyWebApi from "spotify-web-api-node";
 import ColorThief from "colorthief";
 import Visual from "./components/Visual";
 import History from "./components/History";
-
+import styled from "styled-components";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import SpotifyPlayer from "react-spotify-web-playback";
-import { Button } from "react-bootstrap";
+import { Button, Container } from "react-bootstrap";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: "73854ecdce60489882e698ace37f458d",
@@ -189,14 +189,15 @@ export default function Dashboard({ code }) {
   }, [selctedSong]);
 
   return (
-    <FullScreen className="background" handle={handle}>
-      <Button
-        className="button"
+    <div className="container">
+      <button
+        className="menu-button"
         onClick={(e) => {
           e.stopPropagation();
           setViewHistory(!viewHistory);
         }}
       />
+
       {/* <Button className="button" onClick={() => setView("world")} /> */}
       {viewHistory ? (
         <History
@@ -216,6 +217,7 @@ export default function Dashboard({ code }) {
           setSelSong={setSelectedSong}
         ></Visual>
       )}
-    </FullScreen>
+      <div className="panel">Titolo, Artista, Pulsanti, Hovering</div>
+    </div>
   );
 }
