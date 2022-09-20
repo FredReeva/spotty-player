@@ -5,7 +5,7 @@ import Visual from "./components/Visual";
 export const authEndpoint = "https://accounts.spotify.com/authorize";
 
 const redirectUri = "http://localhost:3000";
-const clientId = "73854ecdce60489882e698ace37f458d";
+const clientId = "baa388cedf644fc6a42c78cdeb54542d";
 const responseType = "code";
 
 const scopes = [

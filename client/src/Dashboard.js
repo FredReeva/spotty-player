@@ -10,7 +10,7 @@ import SpotifyPlayer from "react-spotify-web-playback";
 import { Button, Container } from "react-bootstrap";
 
 const spotifyApi = new SpotifyWebApi({
-  clientId: "73854ecdce60489882e698ace37f458d",
+  clientId: "baa388cedf644fc6a42c78cdeb54542d",
 });
 
 var requestTime = 1000;
