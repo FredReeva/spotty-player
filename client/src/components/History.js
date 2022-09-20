@@ -22,18 +22,14 @@ class History extends React.Component {
       p.cursor("pointer");
       cam = p.createCamera();
       timeline = new Timeline(p);
+      if (this.props.history) {
+        timeline.initTimeline(this.props.history);
+      }
     };
 
     p.draw = () => {
-      p.orbitControl();
       p.frameRate(60);
-      timeline.drawTimeline(
-        this.props.song,
-        this.props.valenceEnergy,
-        this.props.history,
-        this.props.colors,
-        cam
-      );
+      timeline.drawTimeline(this.props.song, this.props.colors, cam);
     };
   };
 

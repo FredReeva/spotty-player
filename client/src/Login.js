@@ -39,7 +39,7 @@ export default function Login() {
           colors={[60, 250, 250]}
         ></Visual>
       </div>
-      <a className="button" href={AUTH_URL}>
+      <a className="login-button" href={AUTH_URL}>
         LOG IN
       </a>
     </div>

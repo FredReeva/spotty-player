@@ -118,20 +118,26 @@ export default function Dashboard({ code }) {
     spotifyApi
       .getMyCurrentPlayingTrack()
       .then((res) => {
-        setCurrentSong(res.body.item);
+        let song_infos = res.body.item;
+        spotifyApi
+          .getAudioFeaturesForTrack(currentSongId)
+          .then((res) => {
+            song_infos["valence"] = res.body.valence;
+            song_infos["energy"] = res.body.energy;
+            song_infos["danceability"] = res.body.danceability;
+            setCurrentSong(song_infos);
+          })
+          .catch((err) => {
+            console.log(
+              "something went wrong when getting track features",
+              err
+            );
+          });
+
         setImgUrl(res.body.item.album.images[1].url);
       })
       .catch((err) => {
         console.log("something went wrong when getting album url", err);
-      });
-
-    spotifyApi
-      .getAudioFeaturesForTrack(currentSongId)
-      .then((res) => {
-        setValEn([res.body.valence, res.body.energy, res.body.danceability]);
-      })
-      .catch((err) => {
-        console.log("something went wrong when getting track features", err);
       });
 
     // spotifyApi
@@ -188,15 +194,82 @@ export default function Dashboard({ code }) {
       );
   }, [selctedSong]);
 
+  const previousSong = () => {
+    spotifyApi.skipToPrevious().catch((err) => {
+      console.log("Can't skip to previous song!", err);
+    });
+  };
+
+  const nextSong = () => {
+    spotifyApi.skipToNext().catch((err) => {
+      console.log("Can't skip to next song!", err);
+    });
+  };
+
+  const addToLibrary = () => {
+    spotifyApi
+      .addToMySavedTracks([currentSongId])
+      .then(() => {
+        console.log("Added to library");
+      })
+      .catch((err) => {
+        console.log("Can't add song to library", err);
+      });
+  };
+
   return (
     <div className="container">
-      <button
-        className="menu-button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setViewHistory(!viewHistory);
-        }}
-      />
+      <div className="menu-bar">
+        <button
+          className="menu-button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setViewHistory(!viewHistory);
+          }}
+        />
+        <button
+          className="menu-button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setViewHistory(!viewHistory);
+          }}
+        />
+        <button
+          className="menu-button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setViewHistory(!viewHistory);
+          }}
+        />
+      </div>
+      <div className="playback-bar">
+        <button
+          className="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            previousSong();
+          }}
+        ></button>
+        <div className="infos">
+          {currentSong
+            ? currentSong.name + " - " + currentSong.artists[0].name
+            : "..."}
+        </div>
+        <button
+          className="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            nextSong();
+          }}
+        ></button>
+        <button
+          className="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            addToLibrary();
+          }}
+        ></button>
+      </div>
 
       {/* <Button className="button" onClick={() => setView("world")} /> */}
       {viewHistory ? (
@@ -217,7 +290,6 @@ export default function Dashboard({ code }) {
           setSelSong={setSelectedSong}
         ></Visual>
       )}
-      <div className="panel">Titolo, Artista, Pulsanti, Hovering</div>
     </div>
   );
 }

@@ -1,9 +1,18 @@
+:root {
+  --button-color: rgba(0, 0, 0, 0.6);
+  --button-color-hover: rgba(0, 0, 0, 0.8);
+}
+
 .background {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   left: 0;
+}
+
+.blurred-panel {
+  filter: blur(10px);
 }
 
 .visual {
@@ -14,33 +23,67 @@
 
 .container {
   position: fixed;
-
   padding: 0;
   width: "100vw";
 }
 
-.panel {
+.playback-bar {
   position: fixed;
   display: flex;
+  width: 100vw;
   justify-content: center;
   align-items: center;
 
-  height: 3.2em;
-
-  bottom: 0;
-  left: 50%;
-  transform: translate(-50%, 0);
-  padding: 1em 3em;
-  background-color: rgba(0, 0, 0, 0.829);
-  border-radius: 5em;
-  color: white;
+  top: 0;
 }
 
-.blurred-panel {
-  filter: blur(10px);
+.menu-bar {
+  position: fixed;
+  display: flex;
+  flex-direction: column-reverse;
+  height: 100vh;
+  justify-content: flex-start;
+
+  top: 0;
+}
+
+.infos {
+  display: flex;
+  transition: 300ms;
+  text-align: center;
+
+  padding: 0.8em 2em;
+  background-color: var(--button-color);
+  border-radius: 5em;
+  color: white;
+  cursor: default;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.5);
+  user-select: none;
+}
+.navbar:hover {
+  transition: 300ms;
+  background-color: var(--button-color-hover);
 }
 
 .button {
+  display: flex;
+  transition: 300ms;
+  margin: 10px;
+  border-radius: 50%;
+  width: 3em;
+  height: 3em;
+  background-color: var(--button-color);
+  border: none;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.button:hover {
+  transition: 300ms;
+  background-color: var(--button-color-hover);
+}
+
+.login-button {
   transition: 300ms;
   position: fixed;
   top: 50%;
@@ -56,7 +99,7 @@
   box-shadow: 0 0 10px 2px #323232;
   font-size: 1.5em;
 }
-.button:hover {
+.login-button:hover {
   transition: 300ms;
   padding: 0.5em 2.8em;
   box-shadow: 0 0 10px 5px #414141;
@@ -64,22 +107,20 @@
 }
 
 .menu-button {
+  display: flex;
   transition: 300ms;
-  position: fixed;
-  top: 2em;
-  left: 2em;
-  transform: translate(-50%, -50%);
-  border-radius: 1em;
-  width: 2.5em;
-  height: 2.5em;
-  background-color: #00000073;
-  border-color: white;
-  border-width: 0.3em;
+  justify-self: left;
+  margin: 10px;
+  border-radius: 50%;
+  width: 3em;
+  height: 3em;
+  background-color: var(--button-color);
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .menu-button:hover {
   transition: 300ms;
 
-  box-shadow: 0 0 5px 2px #414141;
-  background-color: #161616eb;
+  background-color: var(--button-color-hover);
 }
