@@ -5,7 +5,7 @@ class World {
     this.is_current_view = false;
     this.p5_ctx = p5_ctx;
     this.songs = [];
-    this.n_songs = 40;
+    this.n_songs = 60;
     this.current_song = "";
     this.main_size = (2 * this.p5_ctx.windowHeight) / 3;
     this.sizes = [200, 100];

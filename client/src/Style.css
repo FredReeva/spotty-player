@@ -1,5 +1,6 @@
 :root {
   --button-color: rgba(0, 0, 0, 0.6);
+  --menu-button-color: rgba(0, 0, 0, 0.1);
   --button-color-hover: rgba(0, 0, 0, 0.8);
 }
 
@@ -33,7 +34,7 @@
   width: 100vw;
   justify-content: center;
   align-items: center;
-
+  cursor: pointer;
   top: 0;
 }
 
@@ -43,7 +44,6 @@
   flex-direction: column-reverse;
   height: 100vh;
   justify-content: flex-start;
-
   top: 0;
 }
 
@@ -51,9 +51,9 @@
   display: flex;
   transition: 300ms;
   text-align: center;
-
-  padding: 0.8em 2em;
   background-color: var(--button-color);
+  padding: 0.8em 2em;
+
   border-radius: 5em;
   color: white;
   cursor: default;
@@ -61,24 +61,34 @@
   border-color: rgba(255, 255, 255, 0.5);
   user-select: none;
 }
-.navbar:hover {
+.infos:hover {
   transition: 300ms;
   background-color: var(--button-color-hover);
 }
 
 .button {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1em;
   transition: 300ms;
   margin: 10px;
   border-radius: 50%;
   width: 3em;
   height: 3em;
+  color: white;
   background-color: var(--button-color);
   border: none;
   border-style: solid;
   border-color: rgba(255, 255, 255, 0.5);
 }
-.button:hover {
+
+.playback-bar:hover .button {
+  transition: 300ms;
+  background-color: var(--button-color-hover);
+}
+
+.playback-bar:hover .infos {
   transition: 300ms;
   background-color: var(--button-color-hover);
 }
@@ -99,6 +109,7 @@
   box-shadow: 0 0 10px 2px #323232;
   font-size: 1.5em;
 }
+
 .login-button:hover {
   transition: 300ms;
   padding: 0.5em 2.8em;
@@ -110,17 +121,20 @@
   display: flex;
   transition: 300ms;
   justify-self: left;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2em;
+  color: white;
   margin: 10px;
   border-radius: 50%;
   width: 3em;
   height: 3em;
-  background-color: var(--button-color);
+  background-color: var(--menu-button-color);
   border-style: solid;
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.menu-button:hover {
+.menu-bar:hover .menu-button {
   transition: 300ms;
-
   background-color: var(--button-color-hover);
 }

@@ -71,10 +71,22 @@ class Timeline {
 
     for (let i = 0; i < this.songs.length; i++) {
       //song_circle.displayTooltip();
+
+      this.p5_ctx.stroke(0);
+      this.p5_ctx.strokeWeight(4);
+
+      if (i != this.songs.length - 1) {
+        this.p5_ctx.line(
+          this.songs[i].x,
+          this.songs[i].y,
+          this.songs[i + 1].x,
+          this.songs[i + 1].y
+        );
+      }
+      this.p5_ctx.noStroke();
+
       this.songs[i].drawSong();
     }
-
-    this.p5_ctx.noStroke();
   }
 
   //   getMouseClicked() {

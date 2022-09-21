@@ -8,6 +8,16 @@ import styled from "styled-components";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import SpotifyPlayer from "react-spotify-web-playback";
 import { Button, Container } from "react-bootstrap";
+import {
+  IoPlay,
+  IoPlayForward,
+  IoPlayBack,
+  IoAdd,
+  IoCheckmark,
+  IoColorPalette,
+  IoAnalytics,
+  IoPause,
+} from "react-icons/io5";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: "baa388cedf644fc6a42c78cdeb54542d",
@@ -18,6 +28,7 @@ var requestTime = 1000;
 export default function Dashboard({ code }) {
   const handle = useFullScreenHandle();
   const [imgUrl, setImgUrl] = useState(null);
+  const [requestTime, setrequestTime] = useState(1000);
   const [view, setView] = useState("world");
   const [valEn, setValEn] = useState([0, 0, 0]);
   const [currentSong, setCurrentSong] = useState(null);
@@ -27,6 +38,7 @@ export default function Dashboard({ code }) {
   const [recommendations, setRecommendations] = useState(null);
   const [queue, setQueue] = useState(null);
   const [history, setHistory] = useState([]);
+  const [playing, setPlaying] = useState(false);
   const [palette, setPalette] = useState([
     [255, 255, 255],
     [0, 0, 0],
@@ -35,7 +47,6 @@ export default function Dashboard({ code }) {
     [0, 0, 0],
     [0, 0, 0],
   ]);
-  const [playbackState, setPlaybackState] = useState(false);
   const [showImage, setShowImage] = useState(false);
   const accessToken = useAuth(code);
   const imgRef = createRef();
@@ -46,27 +57,6 @@ export default function Dashboard({ code }) {
     setPalette(colorThief.getPalette(img, 6));
   };
 
-  const getQueue = async () => {
-    const result = await fetch("https://api.spotify.com/v1/me/player/queue", {
-      methot: "GET",
-      headers: {
-        Authorization: "Bearer " + accessToken,
-      },
-    });
-
-    const response = await result.json();
-    if (Object.keys(result)[0] === "error" && result.error.status === 429) {
-      // Handle rate limiting
-      for (var pair of result.headers.entries()) {
-        console.log("wait for...", pair[1]);
-        requestTime = 1000;
-      }
-    } else {
-      requestTime = 5000;
-    }
-    return response;
-  };
-
   useEffect(() => {
     if (!accessToken) return;
 
@@ -74,14 +64,22 @@ export default function Dashboard({ code }) {
     console.log("got a token! have fun");
 
     setInterval(() => {
-      // spotifyApi
-      //   .getMyCurrentPlaybackState()
-      //   .then((res) => {
-      //     if (res) setPlaybackState(res.body && res.body.is_playing);
-      //   })
-      //   .catch((err) => {
-      //     console.log("something went wrong when getting playback state", err);
-      //   });
+      spotifyApi
+        .getMyCurrentPlaybackState()
+        .then((res) => {
+          // if (Object.keys(res)[0] === "error" && res.error.status === 429) {
+          //   for (var pair of res.headers.entries()) {
+          //     console.log("wait for...", pair[1]);
+          //     setrequestTime(5000);
+          //   }
+          // } else {
+          //   setrequestTime(1000);
+          // }
+          if (res) setPlaying(res.body.is_playing);
+        })
+        .catch((err) => {
+          console.log("something went wrong when getting playback state", err);
+        });
 
       spotifyApi
         .getMyCurrentPlayingTrack()
@@ -102,7 +100,7 @@ export default function Dashboard({ code }) {
     spotifyApi
       .getRecommendations({
         seed_tracks: [currentSongId],
-        limit: 50,
+        limit: 70,
       })
       .then((res) => {
         console.log("getting recommendations...");
@@ -139,21 +137,6 @@ export default function Dashboard({ code }) {
       .catch((err) => {
         console.log("something went wrong when getting album url", err);
       });
-
-    // spotifyApi
-    //   .getMyRecentlyPlayedTracks({
-    //     limit: 20,
-    //   })
-    //   .then((res) => {
-    //     setHistory(res.body.items);
-    //     console.log("history update");
-    //   })
-    //   .catch((err) => {
-    //     console.log(
-    //       "something went wrong when getting the recently played",
-    //       err
-    //     );
-    //   });
 
     if (currentSong) {
       setHistory([...history, currentSong]);
@@ -194,6 +177,25 @@ export default function Dashboard({ code }) {
       );
   }, [selctedSong]);
 
+  const togglePlayback = () => {
+    if (!playing) {
+      spotifyApi
+        .play({})
+        .then(() => setPlaying(true))
+        .catch((err) => {
+          //if the user making the request is non-premium, a 403 FORBIDDEN response code will be returned
+          console.log("Something went wrong when playing song", err);
+        });
+    } else {
+      spotifyApi
+        .pause()
+        .then(() => setPlaying(false))
+        .catch((err) => {
+          console.log("Something went wrong when pausing song", err);
+        });
+    }
+  };
+
   const previousSong = () => {
     spotifyApi.skipToPrevious().catch((err) => {
       console.log("Can't skip to previous song!", err);
@@ -226,30 +228,29 @@ export default function Dashboard({ code }) {
             e.stopPropagation();
             setViewHistory(!viewHistory);
           }}
-        />
+        >
+          <IoPlayBack />
+        </button>
         <button
           className="menu-button"
           onClick={(e) => {
             e.stopPropagation();
             setViewHistory(!viewHistory);
           }}
-        />
+        >
+          <IoAnalytics />
+        </button>
         <button
           className="menu-button"
           onClick={(e) => {
             e.stopPropagation();
             setViewHistory(!viewHistory);
           }}
-        />
+        >
+          <IoColorPalette />
+        </button>
       </div>
       <div className="playback-bar">
-        <button
-          className="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            previousSong();
-          }}
-        ></button>
         <div className="infos">
           {currentSong
             ? currentSong.name + " - " + currentSong.artists[0].name
@@ -259,16 +260,38 @@ export default function Dashboard({ code }) {
           className="button"
           onClick={(e) => {
             e.stopPropagation();
+            previousSong();
+          }}
+        >
+          <IoPlayBack />
+        </button>
+        <button
+          className="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            togglePlayback();
+          }}
+        >
+          {playing ? <IoPause /> : <IoPlay />}
+        </button>
+        <button
+          className="button"
+          onClick={(e) => {
+            e.stopPropagation();
             nextSong();
           }}
-        ></button>
+        >
+          <IoPlayForward />
+        </button>
         <button
           className="button"
           onClick={(e) => {
             e.stopPropagation();
             addToLibrary();
           }}
-        ></button>
+        >
+          <IoAdd />
+        </button>
       </div>
 
       {/* <Button className="button" onClick={() => setView("world")} /> */}
@@ -286,7 +309,7 @@ export default function Dashboard({ code }) {
           song={currentSong}
           recommendations={recommendations}
           colors={palette}
-          playbackState={playbackState}
+          playbackState={playing}
           setSelSong={setSelectedSong}
         ></Visual>
       )}
