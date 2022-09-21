@@ -34,7 +34,6 @@
   width: 100vw;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
   top: 0;
 }
 
@@ -45,6 +44,7 @@
   height: 100vh;
   justify-content: flex-start;
   top: 0;
+  overflow: hidden;
 }
 
 .infos {
@@ -74,8 +74,8 @@
   transition: 300ms;
   margin: 10px;
   border-radius: 50%;
-  width: 3em;
-  height: 3em;
+  min-width: 3em;
+  min-height: 3em;
   color: white;
   background-color: var(--button-color);
   border: none;

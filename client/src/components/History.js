@@ -11,16 +11,18 @@ class History extends React.Component {
 
   Sketch = (p) => {
     var timeline;
-    var cam;
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
+      // timeline.resizeCanvas(
+      //   this.props.song,
+      //   this.props.history,
+      //   this.props.colors
+      // );
     };
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-      p.cursor("pointer");
-      cam = p.createCamera();
       timeline = new Timeline(p);
       if (this.props.history) {
         timeline.initTimeline(this.props.history);
@@ -29,7 +31,8 @@ class History extends React.Component {
 
     p.draw = () => {
       p.frameRate(60);
-      timeline.drawTimeline(this.props.song, this.props.colors, cam);
+
+      timeline.drawTimeline(this.props.song, this.props.colors);
     };
   };
 
@@ -37,9 +40,9 @@ class History extends React.Component {
     this.myP5 = new p5(this.Sketch, this.myRef.current);
   }
 
-  //   componentWillUnmount() {
-  //     this.myP5.remove();
-  //   }
+  componentWillUnmount() {
+    this.myP5.remove();
+  }
 
   render() {
     return <div ref={this.myRef}></div>;

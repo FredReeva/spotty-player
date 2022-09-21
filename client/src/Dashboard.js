@@ -17,6 +17,7 @@ import {
   IoColorPalette,
   IoAnalytics,
   IoPause,
+  IoDisc,
 } from "react-icons/io5";
 
 const spotifyApi = new SpotifyWebApi({
@@ -36,7 +37,7 @@ export default function Dashboard({ code }) {
   const [currentSongId, setCurrentSongId] = useState(null);
   const [selctedSong, setSelectedSong] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
-  const [queue, setQueue] = useState(null);
+  const [songIsSaved, setSongIsSaved] = useState(false);
   const [history, setHistory] = useState([]);
   const [playing, setPlaying] = useState(false);
   const [palette, setPalette] = useState([
@@ -117,12 +118,13 @@ export default function Dashboard({ code }) {
       .getMyCurrentPlayingTrack()
       .then((res) => {
         let song_infos = res.body.item;
+
         spotifyApi
           .getAudioFeaturesForTrack(currentSongId)
           .then((res) => {
             song_infos["valence"] = res.body.valence;
             song_infos["energy"] = res.body.energy;
-            song_infos["danceability"] = res.body.danceability;
+
             setCurrentSong(song_infos);
           })
           .catch((err) => {
@@ -131,11 +133,26 @@ export default function Dashboard({ code }) {
               err
             );
           });
-
         setImgUrl(res.body.item.album.images[1].url);
       })
       .catch((err) => {
         console.log("something went wrong when getting album url", err);
+      });
+
+    spotifyApi
+      .containsMySavedTracks([currentSongId])
+      .then((res) => {
+        // An array is returned, where the first element corresponds to the first track ID in the query
+        var trackIsInYourMusic = res.body[0];
+
+        if (trackIsInYourMusic) {
+          setSongIsSaved(true);
+        } else {
+          setSongIsSaved(false);
+        }
+      })
+      .catch((err) => {
+        console.log("Something went wrong!", err);
       });
 
     if (currentSong) {
@@ -213,6 +230,7 @@ export default function Dashboard({ code }) {
       .addToMySavedTracks([currentSongId])
       .then(() => {
         console.log("Added to library");
+        setSongIsSaved(true);
       })
       .catch((err) => {
         console.log("Can't add song to library", err);
@@ -229,7 +247,7 @@ export default function Dashboard({ code }) {
             setViewHistory(!viewHistory);
           }}
         >
-          <IoPlayBack />
+          <IoDisc />
         </button>
         <button
           className="menu-button"
@@ -253,7 +271,7 @@ export default function Dashboard({ code }) {
       <div className="playback-bar">
         <div className="infos">
           {currentSong
-            ? currentSong.name + " - " + currentSong.artists[0].name
+            ? "🎵 " + currentSong.name + " - " + currentSong.artists[0].name
             : "..."}
         </div>
         <button
@@ -290,11 +308,10 @@ export default function Dashboard({ code }) {
             addToLibrary();
           }}
         >
-          <IoAdd />
+          {songIsSaved ? <IoCheckmark /> : <IoAdd />}
         </button>
       </div>
 
-      {/* <Button className="button" onClick={() => setView("world")} /> */}
       {viewHistory ? (
         <History
           className="visual"

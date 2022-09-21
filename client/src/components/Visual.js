@@ -18,7 +18,7 @@ class Visual extends React.Component {
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-      p.cursor("pointer");
+      // p.cursor("pointer");
 
       world = new World(p);
     };

@@ -6,7 +6,7 @@ class Timeline {
     this.songs = [];
     this.n_songs = 30;
     this.current_song = "";
-    this.main_size = 100;
+    this.size = 100;
   }
 
   initTimeline(past_songs) {
@@ -27,12 +27,18 @@ class Timeline {
       );
 
       let song_pos = this.p5_ctx.createVector(valence, energy);
-      let song = new Song(false, this.p5_ctx, song_pos, this.main_size);
+      let song = new Song(false, this.p5_ctx, song_pos, this.size);
       song.getSong(old_song);
       song.loadImage();
       this.songs.push(song);
     });
   }
+
+  // resizeCanvas(playing, past_songs, colors)
+  // {
+  //   this.initTimeline(past_songs)
+  //   this.drawTimeline(playing, colors)
+  // }
 
   drawTimeline(playing, colors) {
     this.p5_ctx.background(colors[0]);
@@ -59,7 +65,7 @@ class Timeline {
         );
 
         let song_pos = this.p5_ctx.createVector(valence, energy);
-        let song = new Song(false, this.p5_ctx, song_pos, this.main_size);
+        let song = new Song(false, this.p5_ctx, song_pos, this.size);
 
         song.getSong(playing);
         song.loadImage();
@@ -70,20 +76,22 @@ class Timeline {
     }
 
     for (let i = 0; i < this.songs.length; i++) {
-      //song_circle.displayTooltip();
+      //song_circle.displayTooltip()
 
-      this.p5_ctx.stroke(0);
-      this.p5_ctx.strokeWeight(4);
+      this.p5_ctx.stroke(colors[1], 100);
+      this.p5_ctx.strokeWeight(5);
+      this.p5_ctx.fill(colors[1], 100);
 
       if (i != this.songs.length - 1) {
         this.p5_ctx.line(
-          this.songs[i].x,
-          this.songs[i].y,
-          this.songs[i + 1].x,
-          this.songs[i + 1].y
+          this.songs[i].pos.x,
+          this.songs[i].pos.y,
+          -1,
+          this.songs[i + 1].pos.x,
+          this.songs[i + 1].pos.y,
+          -1
         );
       }
-      this.p5_ctx.noStroke();
 
       this.songs[i].drawSong();
     }

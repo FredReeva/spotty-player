@@ -13,8 +13,8 @@ class Song {
     this.pos = position;
     this.dragging = false;
     this.vel = this.draw_context.createVector(
-      this.draw_context.random(-2, 2),
-      this.draw_context.random(-2, 2)
+      this.draw_context.random(-4, 4),
+      this.draw_context.random(-4, 4)
     );
     this.acc = this.draw_context.createVector(
       this.draw_context.random(-2, 2),
@@ -23,8 +23,6 @@ class Song {
     this.force = this.draw_context.createVector(0, 0);
 
     this.size = size;
-    this.n_x = 100 * Math.random() - 50;
-    this.n_y = 100 * Math.random() - 50;
   }
 
   loadImage() {
@@ -69,6 +67,7 @@ class Song {
       this.shadow_color[2],
       this.border_alpha
     );
+    this.draw_context.noStroke();
     this.draw_context.circle(this.pos.x, this.pos.y, this.size);
 
     if (this.img) {
