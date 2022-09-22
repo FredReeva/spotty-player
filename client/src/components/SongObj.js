@@ -68,13 +68,19 @@ class Song {
       this.border_alpha
     );
     this.draw_context.noStroke();
-    this.draw_context.circle(this.pos.x, this.pos.y, this.size);
+    this.draw_context.ellipse(this.pos.x, this.pos.y, this.size, this.size, 40);
 
     if (this.img) {
       this.draw_context.texture(this.img);
     }
 
-    this.draw_context.circle(this.pos.x, this.pos.y, this.size - 10);
+    this.draw_context.ellipse(
+      this.pos.x,
+      this.pos.y,
+      this.size - 10,
+      this.size - 10,
+      40
+    );
   }
 
   limitBorders() {

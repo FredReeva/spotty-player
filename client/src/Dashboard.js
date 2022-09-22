@@ -18,13 +18,12 @@ import {
   IoAnalytics,
   IoPause,
   IoDisc,
+  IoInformationCircle,
 } from "react-icons/io5";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: "baa388cedf644fc6a42c78cdeb54542d",
 });
-
-var requestTime = 1000;
 
 export default function Dashboard({ code }) {
   const handle = useFullScreenHandle();
@@ -39,7 +38,10 @@ export default function Dashboard({ code }) {
   const [recommendations, setRecommendations] = useState(null);
   const [songIsSaved, setSongIsSaved] = useState(false);
   const [history, setHistory] = useState([]);
+  const [initHist, setInitHist] = useState([]);
+  const [errorMsg, setErrorMsg] = useState("");
   const [playing, setPlaying] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const [palette, setPalette] = useState([
     [255, 255, 255],
     [0, 0, 0],
@@ -64,31 +66,41 @@ export default function Dashboard({ code }) {
     spotifyApi.setAccessToken(accessToken);
     console.log("got a token! have fun");
 
-    setInterval(() => {
-      spotifyApi
-        .getMyCurrentPlaybackState()
-        .then((res) => {
-          // if (Object.keys(res)[0] === "error" && res.error.status === 429) {
-          //   for (var pair of res.headers.entries()) {
-          //     console.log("wait for...", pair[1]);
-          //     setrequestTime(5000);
-          //   }
-          // } else {
-          //   setrequestTime(1000);
-          // }
-          if (res) setPlaying(res.body.is_playing);
-        })
-        .catch((err) => {
-          console.log("something went wrong when getting playback state", err);
-        });
+    // spotifyApi
+    //   .getMyRecentlyPlayedTracks()
+    //   .then((res) => {
+    //     setInitHist(res.body.items);
+    //   })
+    //   .catch((err) => {
+    //     console.log(
+    //       "Error while getting recently played tracks. Could not initialize app. Start manually a session from spotify!",
+    //       err
+    //     );
+    //   });
 
+    setInterval(() => {
       spotifyApi
         .getMyCurrentPlayingTrack()
         .then((res) => {
           setCurrentSongId(res.body.item.id);
+          setErrorMsg("");
         })
         .catch((err) => {
-          console.log("Spotify session not found. Please play some music!");
+          console.log("Error getting currently playing...");
+        });
+
+      spotifyApi
+        .getMyCurrentPlaybackState()
+        .then((res) => {
+          if (res) setPlaying(res.body.is_playing);
+          setErrorMsg("");
+        })
+        .catch((err) => {
+          setErrorMsg("Play something on a device to start");
+          if (err.status === 429) {
+            console.log("Limiting requests to spotify api...");
+            setrequestTime(10000);
+          }
         });
     }, requestTime);
   }, [accessToken]);
@@ -98,20 +110,18 @@ export default function Dashboard({ code }) {
     if (!accessToken) return;
     if (!currentSongId) return;
 
+    setErrorMsg("Getting recommendations...");
     spotifyApi
       .getRecommendations({
         seed_tracks: [currentSongId],
         limit: 70,
       })
       .then((res) => {
-        console.log("getting recommendations...");
         setRecommendations(res.body.tracks);
+        setErrorMsg("");
       })
       .catch((err) => {
-        console.log(
-          "Something went wrong when getting recommended tracks",
-          err
-        );
+        setErrorMsg("Can't get recommendations!");
       });
 
     spotifyApi
@@ -128,15 +138,12 @@ export default function Dashboard({ code }) {
             setCurrentSong(song_infos);
           })
           .catch((err) => {
-            console.log(
-              "something went wrong when getting track features",
-              err
-            );
+            console.log("something went wrong when getting track features");
           });
         setImgUrl(res.body.item.album.images[1].url);
       })
       .catch((err) => {
-        console.log("something went wrong when getting album url", err);
+        console.log("something went wrong when getting album url");
       });
 
     spotifyApi
@@ -158,7 +165,7 @@ export default function Dashboard({ code }) {
     if (currentSong) {
       setHistory([...history, currentSong]);
     }
-  }, [accessToken, currentSongId]);
+  }, [currentSongId]);
 
   useEffect(() => {
     if (!imgUrl) return;
@@ -185,44 +192,75 @@ export default function Dashboard({ code }) {
       })
       .then(
         function () {
-          console.log("Playback started");
+          setErrorMsg("");
         },
         function (err) {
-          //if the user making the request is non-premium, a 403 FORBIDDEN response code will be returned
-          console.log("Something went wrong!", err);
+          setErrorMsg("Can't change song. Are you premium user?");
         }
       );
   }, [selctedSong]);
+
+  const suggestSongsPlane = (coordinates) => {
+    if (!accessToken) return;
+    if (!currentSongId) return;
+
+    spotifyApi
+      .getRecommendations({
+        seed_tracks: [currentSongId],
+        limit: 1,
+        target_energy: coordinates[1],
+        target_valence: coordinates[0],
+      })
+      .then((res) => {
+        setSelectedSong(res.body.tracks[0].id);
+
+        setErrorMsg("");
+      })
+      .catch((err) => {
+        setErrorMsg("Can't get recommendations!");
+      });
+  };
 
   const togglePlayback = () => {
     if (!playing) {
       spotifyApi
         .play({})
-        .then(() => setPlaying(true))
+        .then(() => {
+          setPlaying(true);
+          setErrorMsg("");
+        })
         .catch((err) => {
           //if the user making the request is non-premium, a 403 FORBIDDEN response code will be returned
-          console.log("Something went wrong when playing song", err);
+          setErrorMsg("Can't start playback. Are you a premium user?");
         });
     } else {
       spotifyApi
         .pause()
         .then(() => setPlaying(false))
         .catch((err) => {
-          console.log("Something went wrong when pausing song", err);
+          console.log("Something went wrong when pausing song");
         });
     }
   };
 
   const previousSong = () => {
-    spotifyApi.skipToPrevious().catch((err) => {
-      console.log("Can't skip to previous song!", err);
-    });
+    spotifyApi
+      .skipToPrevious(() => {
+        setErrorMsg("");
+      })
+      .catch((err) => {
+        setErrorMsg("Can't change song");
+      });
   };
 
   const nextSong = () => {
-    spotifyApi.skipToNext().catch((err) => {
-      console.log("Can't skip to next song!", err);
-    });
+    spotifyApi
+      .skipToNext(() => {
+        setErrorMsg("");
+      })
+      .catch((err) => {
+        setErrorMsg("Can't change song. Are you a premium user?");
+      });
   };
 
   const addToLibrary = () => {
@@ -233,7 +271,7 @@ export default function Dashboard({ code }) {
         setSongIsSaved(true);
       })
       .catch((err) => {
-        console.log("Can't add song to library", err);
+        console.log("Can't add song to library");
       });
   };
 
@@ -241,7 +279,7 @@ export default function Dashboard({ code }) {
     <div className="container">
       <div className="menu-bar">
         <button
-          className="menu-button"
+          className="button"
           onClick={(e) => {
             e.stopPropagation();
             setViewHistory(!viewHistory);
@@ -250,7 +288,7 @@ export default function Dashboard({ code }) {
           <IoDisc />
         </button>
         <button
-          className="menu-button"
+          className="button"
           onClick={(e) => {
             e.stopPropagation();
             setViewHistory(!viewHistory);
@@ -259,7 +297,7 @@ export default function Dashboard({ code }) {
           <IoAnalytics />
         </button>
         <button
-          className="menu-button"
+          className="button"
           onClick={(e) => {
             e.stopPropagation();
             setViewHistory(!viewHistory);
@@ -312,6 +350,20 @@ export default function Dashboard({ code }) {
         </button>
       </div>
 
+      <div className="footer-bar">
+        {errorMsg}
+
+        <button
+          className="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowInfo(!showInfo);
+          }}
+        >
+          <IoInformationCircle />
+        </button>
+      </div>
+
       {viewHistory ? (
         <History
           className="visual"
@@ -319,6 +371,7 @@ export default function Dashboard({ code }) {
           history={history}
           colors={palette}
           valenceEnergy={valEn}
+          setSelHistSong={suggestSongsPlane}
         ></History>
       ) : (
         <Visual

@@ -34,7 +34,6 @@ class Visual extends React.Component {
 
     p.mouseClicked = () => {
       let selection = world.getMouseClicked();
-      console.log(selection);
       if (selection) {
         this.props.setSelSong(selection);
       }

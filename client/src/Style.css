@@ -47,6 +47,18 @@
   overflow: hidden;
 }
 
+.footer-bar {
+  position: fixed;
+  display: flex;
+  width: 100vw;
+  justify-content: right;
+  align-items: center;
+  bottom: 0;
+  font-size: 1em;
+  color: rgb(255, 255, 255);
+  text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+}
+
 .infos {
   display: flex;
   transition: 300ms;
@@ -70,7 +82,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1em;
+  font-size: 1.2em;
   transition: 300ms;
   margin: 10px;
   border-radius: 50%;
