@@ -4,10 +4,11 @@ import SpotifyWebApi from "spotify-web-api-node";
 import ColorThief from "colorthief";
 import Visual from "./components/Visual";
 import History from "./components/History";
+import StyleTransfer from "./components/StyleTransfer";
 import styled from "styled-components";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import SpotifyPlayer from "react-spotify-web-playback";
-import { Button, Container } from "react-bootstrap";
+import ReactTooltip from "react-tooltip";
 import {
   IoPlay,
   IoPlayForward,
@@ -29,7 +30,7 @@ export default function Dashboard({ code }) {
   const handle = useFullScreenHandle();
   const [imgUrl, setImgUrl] = useState(null);
   const [requestTime, setrequestTime] = useState(1000);
-  const [view, setView] = useState("world");
+  const [menuSelection, setMenuSelection] = useState("main");
   const [valEn, setValEn] = useState([0, 0, 0]);
   const [currentSong, setCurrentSong] = useState(null);
   const [viewHistory, setViewHistory] = useState(false);
@@ -38,7 +39,6 @@ export default function Dashboard({ code }) {
   const [recommendations, setRecommendations] = useState(null);
   const [songIsSaved, setSongIsSaved] = useState(false);
   const [history, setHistory] = useState([]);
-  const [initHist, setInitHist] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [playing, setPlaying] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -276,31 +276,86 @@ export default function Dashboard({ code }) {
   };
 
   return (
-    <div className="container">
+    <div
+      className="container"
+      style={{
+        backgroundColor: `rgb(${palette[0]})`,
+      }}
+    >
+      {menuSelection == "hist" ? (
+        <History
+          className="visual"
+          song={currentSong}
+          history={history}
+          colors={palette}
+          valenceEnergy={valEn}
+          setSelHistSong={suggestSongsPlane}
+        ></History>
+      ) : menuSelection == "main" ? (
+        <Visual
+          className="visual"
+          song={currentSong}
+          recommendations={recommendations}
+          colors={palette}
+          playbackState={playing}
+          setSelSong={setSelectedSong}
+        ></Visual>
+      ) : menuSelection == "style" ? (
+        <StyleTransfer
+          className="visual"
+          song={currentSong}
+          colors={palette}
+        ></StyleTransfer>
+      ) : null}
+
+      <ReactTooltip />
+      <div className="footer-bar">
+        {errorMsg}
+
+        <button
+          className="button"
+          data-tip="Info"
+          data-place="left"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowInfo(!showInfo);
+          }}
+        >
+          <IoInformationCircle />
+        </button>
+      </div>
+
       <div className="menu-bar">
         <button
           className="button"
+          data-tip="Visual"
+          data-place="right"
           onClick={(e) => {
             e.stopPropagation();
-            setViewHistory(!viewHistory);
+            setMenuSelection("main");
           }}
         >
           <IoDisc />
         </button>
+
         <button
           className="button"
+          data-tip="History"
+          data-place="right"
           onClick={(e) => {
             e.stopPropagation();
-            setViewHistory(!viewHistory);
+            setMenuSelection("hist");
           }}
         >
           <IoAnalytics />
         </button>
         <button
           className="button"
+          data-tip="Style"
+          data-place="right"
           onClick={(e) => {
             e.stopPropagation();
-            setViewHistory(!viewHistory);
+            setMenuSelection("style");
           }}
         >
           <IoColorPalette />
@@ -349,40 +404,6 @@ export default function Dashboard({ code }) {
           {songIsSaved ? <IoCheckmark /> : <IoAdd />}
         </button>
       </div>
-
-      <div className="footer-bar">
-        {errorMsg}
-
-        <button
-          className="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowInfo(!showInfo);
-          }}
-        >
-          <IoInformationCircle />
-        </button>
-      </div>
-
-      {viewHistory ? (
-        <History
-          className="visual"
-          song={currentSong}
-          history={history}
-          colors={palette}
-          valenceEnergy={valEn}
-          setSelHistSong={suggestSongsPlane}
-        ></History>
-      ) : (
-        <Visual
-          className="visual"
-          song={currentSong}
-          recommendations={recommendations}
-          colors={palette}
-          playbackState={playing}
-          setSelSong={setSelectedSong}
-        ></Visual>
-      )}
     </div>
   );
 }

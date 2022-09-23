@@ -1,11 +1,11 @@
 import React from "react";
-import styled from "styled-components";
 import Visual from "./components/Visual";
+import credentials from "./credentials.json";
 
 export const authEndpoint = "https://accounts.spotify.com/authorize";
 
-const redirectUri = "http://localhost:3000";
-const clientId = "baa388cedf644fc6a42c78cdeb54542d";
+const redirectUri = credentials.redirect_uri;
+const clientId = credentials.client_id;
 const responseType = "code";
 
 const scopes = [

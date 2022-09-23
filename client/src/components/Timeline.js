@@ -161,14 +161,14 @@ class Timeline {
 
   increaseAlpha() {
     if (this.alpha < 200) {
-      this.alpha += 2;
+      this.alpha += 50;
     } else {
       this.alpha = 200;
     }
   }
   decreaseAlpha() {
     if (this.alpha > 0) {
-      this.alpha -= 1;
+      this.alpha -= 2;
     } else {
       this.alpha = 0;
     }

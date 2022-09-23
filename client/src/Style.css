@@ -2,14 +2,7 @@
   --button-color: rgba(0, 0, 0, 0.6);
   --menu-button-color: rgba(0, 0, 0, 0.1);
   --button-color-hover: rgba(0, 0, 0, 0.8);
-}
-
-.background {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  background-color: rgb(0, 0, 0);
 }
 
 .blurred-panel {
@@ -17,7 +10,11 @@
 }
 
 .visual {
-  overflow: "hidden";
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: "100vw";
   height: "100vh";
 }
@@ -50,13 +47,24 @@
 .footer-bar {
   position: fixed;
   display: flex;
-  width: 100vw;
+  width: 10px;
   justify-content: right;
   align-items: center;
   bottom: 0;
+  right: 0;
   font-size: 1em;
   color: rgb(255, 255, 255);
   text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+}
+
+.styletrans-bar {
+  position: fixed;
+  display: flex;
+  width: 100vw;
+  justify-content: center;
+  align-items: center;
+  bottom: 0;
+  font-size: 1em;
 }
 
 .infos {
@@ -149,4 +157,34 @@
 .menu-bar:hover .menu-button {
   transition: 300ms;
   background-color: var(--button-color-hover);
+}
+
+.webcam-video {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  width: "100vw";
+  height: "100vh";
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-image {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  border-radius: 50%;
+  height: 75vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.player {
+  position: fixed;
+
+  height: 75vh;
+  border-radius: 100%;
 }
