@@ -27,6 +27,7 @@ class Visual extends React.Component {
       p.frameRate(60);
       world.drawWorld(
         this.props.song,
+        this.props.queue,
         this.props.recommendations,
         this.props.colors
       );

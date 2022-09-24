@@ -7,7 +7,7 @@ class Timeline {
     this.n_songs = 30;
     this.current_song = "";
     this.size = 80;
-    this.alpha = 0;
+    this.alpha = 200;
   }
 
   initTimeline(past_songs) {
@@ -44,6 +44,9 @@ class Timeline {
   drawTimeline(playing, colors, img_emoji) {
     this.p5_ctx.background(colors[0]);
 
+    this.drawArrows(colors, img_emoji);
+    this.p5_ctx.translate(0, 0, 1);
+
     let line_color = this.p5_ctx.color(
       colors[1][0],
       colors[1][1],
@@ -51,8 +54,7 @@ class Timeline {
       180
     );
 
-    this.drawArrows(colors, img_emoji);
-    this.decreaseAlpha();
+    //this.decreaseAlpha();
 
     if (this.p5_ctx.frameCount % 20 === 0 && playing && colors) {
       // this.songs.forEach((song_circle, index) => {
@@ -72,7 +74,7 @@ class Timeline {
           0,
           1,
           this.p5_ctx.windowHeight / 2 - 50,
-          -this.p5_ctx.windowHeight / 2 + 50
+          -this.p5_ctx.windowHeight / 2 + 100
         );
 
         let song_pos = this.p5_ctx.createVector(valence, energy);
@@ -104,7 +106,9 @@ class Timeline {
       // }
 
       if (i === this.songs.length - 1) {
-        this.songs[i].size += 0.08 * Math.sin(this.p5_ctx.frameCount * 0.02);
+        this.songs[i].size += 0.085 * Math.sin(this.p5_ctx.frameCount * 0.015);
+      } else {
+        this.songs[i].size = this.size;
       }
 
       this.songs[i].drawSong();
@@ -113,9 +117,9 @@ class Timeline {
 
   drawArrows(colors, img_emoji) {
     let arrow_color = this.p5_ctx.color(
-      colors[1][0],
-      colors[1][1],
-      colors[1][2],
+      colors[2][0],
+      colors[2][1],
+      colors[2][2],
       this.alpha
     );
     this.p5_ctx.stroke(arrow_color);
@@ -124,55 +128,89 @@ class Timeline {
 
     // vertical arrow
 
-    let size_inv = 4;
-    let half_vert_size = this.p5_ctx.windowHeight / size_inv;
-    let half_hor_size = this.p5_ctx.windowWidth / size_inv;
-    this.p5_ctx.line(0, half_vert_size, -2, 0, -half_vert_size, -2);
+    let size_inv_x = 2.5;
+    let size_inv_y = 3.5;
+    let y_offset = 30;
+    let half_vert_size = this.p5_ctx.windowHeight / size_inv_y;
+    let half_hor_size = this.p5_ctx.windowWidth / size_inv_x;
+    this.p5_ctx.line(
+      0,
+      -half_vert_size + y_offset,
+      -2,
+      0,
+      +half_vert_size + y_offset,
+      -2
+    );
 
     // horizontal arrow
-    this.p5_ctx.line(-half_hor_size, 0, -2, half_hor_size, 0, -2);
+    this.p5_ctx.line(-half_hor_size, y_offset, -2, half_hor_size, y_offset, -2);
 
     this.p5_ctx.noStroke();
     this.p5_ctx.triangle(
       -8,
-      -half_vert_size + 1,
+      -half_vert_size + y_offset + 1,
       8,
-      -half_vert_size + 1,
+      -half_vert_size + y_offset + 1,
       0,
-      -half_vert_size - 15
+      -half_vert_size + y_offset - 15
     );
 
     this.p5_ctx.triangle(
-      half_hor_size - 1,
-      -8,
-      half_hor_size - 1,
-      8,
+      half_hor_size - 2,
+      -8 + y_offset,
+      half_hor_size - 2,
+      8 + y_offset,
       half_hor_size + 15,
-      0
+      0 + y_offset
     );
 
+    let size_img = 40;
     this.p5_ctx.tint(255, this.alpha);
-    this.p5_ctx.image(img_emoji[0], half_hor_size + 60, 0, 50, 50);
-    this.p5_ctx.image(img_emoji[1], 0, -half_vert_size - 60, 50, 50);
-    this.p5_ctx.image(img_emoji[2], -half_hor_size - 60, 0, 50, 50);
-    this.p5_ctx.image(img_emoji[3], 0, half_vert_size + 60, 50, 50);
+    this.p5_ctx.image(
+      img_emoji[0],
+      half_hor_size + 60,
+      0 + y_offset,
+      size_img,
+      size_img
+    );
+    this.p5_ctx.image(
+      img_emoji[1],
+      0,
+      -half_vert_size - 60 + y_offset,
+      size_img,
+      size_img
+    );
+    this.p5_ctx.image(
+      img_emoji[2],
+      -half_hor_size - 50,
+      0 + y_offset,
+      size_img,
+      size_img
+    );
+    this.p5_ctx.image(
+      img_emoji[3],
+      0,
+      half_vert_size + 40 + y_offset,
+      size_img,
+      size_img
+    );
     this.p5_ctx.tint(255, 255);
   }
 
-  increaseAlpha() {
-    if (this.alpha < 200) {
-      this.alpha += 50;
-    } else {
-      this.alpha = 200;
-    }
-  }
-  decreaseAlpha() {
-    if (this.alpha > 0) {
-      this.alpha -= 2;
-    } else {
-      this.alpha = 0;
-    }
-  }
+  // increaseAlpha() {
+  //   if (this.alpha < 200) {
+  //     this.alpha += 50;
+  //   } else {
+  //     this.alpha = 200;
+  //   }
+  // }
+  // decreaseAlpha() {
+  //   if (this.alpha > 0) {
+  //     this.alpha -= 0.5;
+  //   } else {
+  //     this.alpha = 0;
+  //   }
+  // }
 }
 
 export default Timeline;

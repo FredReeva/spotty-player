@@ -10,6 +10,7 @@ class Song {
       this.draw_context.windowHeight / 2
     );
     this.border_alpha = 10;
+    this.border = 5;
     this.pos = position;
     this.dragging = false;
     this.vel = this.draw_context.createVector(
@@ -77,8 +78,8 @@ class Song {
     this.draw_context.ellipse(
       this.pos.x,
       this.pos.y,
-      this.size - 10,
-      this.size - 10,
+      this.size - this.border,
+      this.size - this.border,
       40
     );
   }

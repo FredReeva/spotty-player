@@ -53,9 +53,9 @@ class History extends React.Component {
       ]);
     };
 
-    p.mouseMoved = () => {
-      timeline.increaseAlpha();
-    };
+    // p.mouseMoved = () => {
+    //   timeline.increaseAlpha();
+    // };
   };
 
   componentDidMount() {

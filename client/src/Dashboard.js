@@ -9,6 +9,7 @@ import styled from "styled-components";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import SpotifyPlayer from "react-spotify-web-playback";
 import ReactTooltip from "react-tooltip";
+import credentials from "./credentials.json";
 import {
   IoPlay,
   IoPlayForward,
@@ -23,7 +24,7 @@ import {
 } from "react-icons/io5";
 
 const spotifyApi = new SpotifyWebApi({
-  clientId: "baa388cedf644fc6a42c78cdeb54542d",
+  clientId: credentials.client_id,
 });
 
 export default function Dashboard({ code }) {
@@ -39,6 +40,7 @@ export default function Dashboard({ code }) {
   const [recommendations, setRecommendations] = useState(null);
   const [songIsSaved, setSongIsSaved] = useState(false);
   const [history, setHistory] = useState([]);
+  const [queue, setQueue] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [playing, setPlaying] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -97,10 +99,10 @@ export default function Dashboard({ code }) {
         })
         .catch((err) => {
           setErrorMsg("Play something on a device to start");
-          if (err.status === 429) {
-            console.log("Limiting requests to spotify api...");
-            setrequestTime(10000);
-          }
+          // if (err.status === 429) {
+          //   console.log("Limiting requests to spotify api...");
+          //   setrequestTime(10000);
+          // }
         });
     }, requestTime);
   }, [accessToken]);
@@ -110,11 +112,13 @@ export default function Dashboard({ code }) {
     if (!accessToken) return;
     if (!currentSongId) return;
 
+    getQueue();
+
     setErrorMsg("Getting recommendations...");
     spotifyApi
       .getRecommendations({
         seed_tracks: [currentSongId],
-        limit: 70,
+        limit: 80,
       })
       .then((res) => {
         setRecommendations(res.body.tracks);
@@ -123,7 +127,6 @@ export default function Dashboard({ code }) {
       .catch((err) => {
         setErrorMsg("Can't get recommendations!");
       });
-
     spotifyApi
       .getMyCurrentPlayingTrack()
       .then((res) => {
@@ -159,7 +162,7 @@ export default function Dashboard({ code }) {
         }
       })
       .catch((err) => {
-        console.log("Something went wrong!", err);
+        console.log("can't tell if the song is already in your library");
       });
 
     if (currentSong) {
@@ -243,6 +246,34 @@ export default function Dashboard({ code }) {
     }
   };
 
+  // useEffect(() => {
+  //   getQueue().catch(() => {
+  //     console.log("error while getting the queue");
+  //   });
+  // }, [recommendations]);
+
+  const getQueue = async () => {
+    const result = await fetch("https://api.spotify.com/v1/me/player/queue", {
+      methot: "GET",
+      headers: {
+        Authorization: "Bearer " + accessToken,
+      },
+    }).catch((err) => {
+      console.log("error wwhile getting queue");
+    });
+
+    const response = await result.json();
+
+    // let future_songs = [];
+    // if (recommendations) {
+    //   future_songs = response.queue.concat(recommendations);
+    // } else {
+    //   future_songs = response.queue;
+    // }
+
+    setQueue(response.queue);
+  };
+
   const previousSong = () => {
     spotifyApi
       .skipToPrevious(() => {
@@ -295,6 +326,7 @@ export default function Dashboard({ code }) {
         <Visual
           className="visual"
           song={currentSong}
+          queue={queue}
           recommendations={recommendations}
           colors={palette}
           playbackState={playing}
@@ -303,8 +335,9 @@ export default function Dashboard({ code }) {
       ) : menuSelection == "style" ? (
         <StyleTransfer
           className="visual"
-          song={currentSong}
+          song={currentSongId}
           colors={palette}
+          imageUrl={imgUrl}
         ></StyleTransfer>
       ) : null}
 

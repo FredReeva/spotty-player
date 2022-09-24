@@ -1,6 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import Webcam from "./Webcam";
 import Model from "./Model";
+import * as tf from "@tensorflow/tfjs";
+import {
+  IoVideocam,
+  IoVideocamOff,
+  IoImage,
+  IoRemoveCircle,
+  IoGitNetworkSharp,
+  IoSparkles,
+} from "react-icons/io5";
+import ReactTooltip from "react-tooltip";
+import { loadGraphModel } from "@tensorflow/tfjs";
 
 export default function StyleTransfer(props) {
   const videoRef = useRef(null);
@@ -8,6 +19,7 @@ export default function StyleTransfer(props) {
   const [webcam, setWebcam] = useState(false);
   const [stream, setStream] = useState(null);
   const [image, setImage] = useState(null);
+  const [resultImg, setResultImg] = useState(null);
   const [model, setModel] = useState(null);
   const [videoConstraints, setVideoConstraints] = useState({
     width: 1280,
@@ -82,21 +94,83 @@ export default function StyleTransfer(props) {
   };
 
   useEffect(() => {
-    let model = new Model();
-    setModel(model);
+    let transform_model = new Model(
+      "./models/saved_model_transformer_js/model.json"
+    );
+    let style_model = new Model("./models/saved_model_style_js/model.json");
+    setModel([style_model, transform_model]);
   }, []);
 
-  const computeStyleTransfer = () => {
-    console.log("compute style transfer");
-    const img = document.getElementById("image");
+  // useEffect(() => {
+  //   computeStyleTransfer();
+  // }, [props.imageUrl]);
 
-    img.addEventListener("loadeddata", (e) => {
-      //Video should now be loaded but we can add a second check
+  async function computeStyleTransfer() {
+    console.log("computing style transfer...");
 
-      let prediction = model.predict(img);
-      console.log(prediction);
+    // let still_frame = new ImageCapture(stream.getVideoTracks()[0]);
+
+    // const photo = document.getElementById("webcam-content");
+    // console.log(photo);
+    // photo.setAttribute("src", data);
+    const img_style = document.getElementById("image-style");
+    const img_content = document.getElementById("image-content");
+
+    let processed_content_image = model[0].preprocessImage(img_content);
+    let processed_style_image = model[0].preprocessImage(img_style);
+
+    await tf.nextFrame();
+    const style_image = await tf.tidy(() => {
+      return model[0].predict(processed_style_image);
     });
-  };
+
+    console.log("done style");
+
+    await tf.nextFrame();
+    const content_image = await tf.tidy(() => {
+      return model[0].predict(processed_content_image);
+    });
+
+    console.log("done content");
+
+    await tf.nextFrame();
+    const combine = await tf.tidy(() => {
+      //const styleBottleneckScaled = styleBottleneck.mul(tf.scalar(this.styleRatio));
+      //const identityBottleneckScaled = identityBottleneck.mul(tf.scalar(1.0-this.styleRatio));
+      return style_image.add(content_image);
+    });
+
+    console.log("done combination");
+
+    await tf.nextFrame();
+    const stylized = await tf.tidy(() => {
+      return model[1].predict([processed_content_image, combine]).squeeze();
+    });
+
+    await tf.nextFrame();
+    const result = await tf.browser.toPixels(stylized);
+    await tf.nextFrame();
+
+    const imgData = new ImageData(result, 200, 200);
+
+    var canvas = document.createElement("canvas");
+    canvas.width = 200;
+    canvas.height = 200;
+    var ctx = canvas.getContext("2d");
+    ctx.putImageData(imgData, 0, 0);
+
+    //ctx.fillRect(0, 0, 100, 100);
+
+    //document.body.appendChild(img_res);
+
+    setResultImg(canvas.toDataURL("image/png"));
+
+    style_image.dispose();
+    content_image.dispose();
+    stylized.dispose();
+
+    console.log("done");
+  }
 
   return (
     <div
@@ -111,16 +185,29 @@ export default function StyleTransfer(props) {
         type="file"
         onChange={changeImage}
       />
+
+      <img id="result" className="result-image" src={resultImg} />
+
       {image ? (
         <img
-          id="image"
+          id="image-content"
           className="upload-image"
           src={URL.createObjectURL(image)}
         />
       ) : null}
 
+      {props.imageUrl ? (
+        <img
+          id="image-style"
+          className="style-image"
+          crossOrigin="anonymous"
+          src={props.imageUrl}
+        />
+      ) : null}
+
       {webcam ? (
         <Webcam
+          id="webcam-content"
           audio={false}
           height={720}
           screenshotFormat="image/jpeg"
@@ -130,9 +217,13 @@ export default function StyleTransfer(props) {
         ></Webcam>
       ) : null}
 
+      <ReactTooltip />
+
       <div className="styletrans-bar">
         <button
           className="button"
+          data-tip="Image"
+          data-place="top"
           style={{
             borderRadius: "10em",
             padding: "0.8em",
@@ -142,10 +233,12 @@ export default function StyleTransfer(props) {
             changeImage();
           }}
         >
-          {!image ? "Upload Image" : "Delete Image"}
+          {!image ? <IoImage /> : <IoRemoveCircle />}
         </button>
         <button
           className="button"
+          data-tip="Webcam"
+          data-place="top"
           style={{
             borderRadius: "10em",
             padding: "0.8em",
@@ -155,11 +248,13 @@ export default function StyleTransfer(props) {
             toggleWebcam();
           }}
         >
-          {!webcam ? "Start Webcam" : "Stop Webcam"}
+          {!webcam ? <IoVideocam /> : <IoVideocamOff />}
         </button>
 
         <button
           className="button"
+          data-tip="Style Transfer"
+          data-place="top"
           style={{
             borderRadius: "10em",
             padding: "0.8em",
@@ -169,7 +264,7 @@ export default function StyleTransfer(props) {
             computeStyleTransfer();
           }}
         >
-          Style Transfer
+          <IoSparkles />
         </button>
       </div>
     </div>
