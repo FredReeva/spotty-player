@@ -9,7 +9,7 @@ class World {
     this.queue_songs = 15;
     this.current_song = "";
     this.main_size = (2 * this.p5_ctx.windowHeight) / 3;
-    this.sizes = [250, 100];
+    this.sizes = [180, 180];
     this.center_pos = this.p5_ctx.createVector(0, 0);
     this.songs.push(
       new Song(true, this.p5_ctx, this.center_pos, this.main_size)

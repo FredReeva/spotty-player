@@ -49,10 +49,10 @@ class Song {
     this.applyForce(this.force);
 
     //if (this.acc.mag() < 0.01) this.acc.setMag(0);
-    this.acc.limit(0.5);
+    this.acc.limit(0.8);
     this.vel.add(this.acc);
     //if (this.vel.mag() < 0.001) this.vel.setMag(0);
-    this.vel.limit(0.3);
+    this.vel.limit(0.5);
     this.pos.add(this.vel);
 
     this.acc.mult(0);
@@ -163,7 +163,7 @@ class Song {
     let friction = this.vel.copy();
     friction.normalize();
     friction.mult(-1);
-    friction.setMag(this.vel.mag() * this.size * 0.1);
+    friction.setMag(this.vel.mag() * this.size * 0.05);
     this.force.add(friction);
   }
 
