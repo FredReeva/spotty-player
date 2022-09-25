@@ -1,13 +1,12 @@
-import React, { useState, useEffect, createRef } from "react";
+import React, { useState, useEffect } from "react";
 import useAuth from "./useAuth";
 import SpotifyWebApi from "spotify-web-api-node";
 import ColorThief from "colorthief";
 import Visual from "./components/Visual";
 import History from "./components/History";
 import StyleTransfer from "./components/StyleTransfer";
-import styled from "styled-components";
-import { FullScreen, useFullScreenHandle } from "react-full-screen";
-import SpotifyPlayer from "react-spotify-web-playback";
+// import { FullScreen, useFullScreenHandle } from "react-full-screen";
+// import SpotifyPlayer from "react-spotify-web-playback";
 import ReactTooltip from "react-tooltip";
 import credentials from "./credentials.json";
 import {
@@ -22,28 +21,27 @@ import {
   IoDisc,
   IoInformationCircle,
 } from "react-icons/io5";
+import InfoPage from "./components/InfoPage";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: credentials.client_id,
 });
 
 export default function Dashboard({ code }) {
-  const handle = useFullScreenHandle();
+  //const handle = useFullScreenHandle();
   const [imgUrl, setImgUrl] = useState(null);
-  const [requestTime, setrequestTime] = useState(1000);
+  const [requestTime, setrequestTime] = useState(2000);
   const [menuSelection, setMenuSelection] = useState("main");
-  const [valEn, setValEn] = useState([0, 0, 0]);
   const [currentSong, setCurrentSong] = useState(null);
-  const [viewHistory, setViewHistory] = useState(false);
   const [currentSongId, setCurrentSongId] = useState(null);
-  const [selctedSong, setSelectedSong] = useState(null);
+  const [selectedSong, setSelectedSong] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
   const [songIsSaved, setSongIsSaved] = useState(false);
   const [history, setHistory] = useState([]);
   const [queue, setQueue] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [playing, setPlaying] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
   const [palette, setPalette] = useState([
     [255, 255, 255],
     [0, 0, 0],
@@ -52,15 +50,20 @@ export default function Dashboard({ code }) {
     [0, 0, 0],
     [0, 0, 0],
   ]);
-  const [showImage, setShowImage] = useState(false);
+
   const accessToken = useAuth(code);
-  const imgRef = createRef();
 
   const getPalette = (img) => {
     const colorThief = new ColorThief();
     // const img = imgRef.current;
     setPalette(colorThief.getPalette(img, 6));
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setShowInfo(false);
+    }, 7000);
+  }, []);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -79,95 +82,124 @@ export default function Dashboard({ code }) {
     //       err
     //     );
     //   });
+    let isSubscribed = true;
 
-    setInterval(() => {
-      spotifyApi
-        .getMyCurrentPlayingTrack()
-        .then((res) => {
-          setCurrentSongId(res.body.item.id);
-          setErrorMsg("");
-        })
-        .catch((err) => {
-          console.log("Error getting currently playing...");
-        });
+    if (isSubscribed) {
+      setInterval(() => {
+        spotifyApi
+          .getMyCurrentPlaybackState()
+          .then((res) => {
+            setPlaying(res.body.is_playing);
+            setCurrentSongId(res.body.item.id);
+            setErrorMsg("");
+          })
+          .catch((err) => {
+            if (err.status === 429) {
+              console.log("Limiting requests to spotify api...");
+              setrequestTime(10000);
+            } else {
+              setErrorMsg("Play something on a device to start");
+              setrequestTime(1000);
+            }
+          });
+      }, requestTime);
+    }
 
-      spotifyApi
-        .getMyCurrentPlaybackState()
-        .then((res) => {
-          if (res) setPlaying(res.body.is_playing);
-          setErrorMsg("");
-        })
-        .catch((err) => {
-          setErrorMsg("Play something on a device to start");
-          // if (err.status === 429) {
-          //   console.log("Limiting requests to spotify api...");
-          //   setrequestTime(10000);
-          // }
-        });
-    }, requestTime);
-  }, [accessToken]);
+    return () => (isSubscribed = false);
+  }, [accessToken, requestTime]);
 
   // Every few seconds check player state
   useEffect(() => {
+    let isSubscribed = true;
     if (!accessToken) return;
     if (!currentSongId) return;
 
-    getQueue();
+    // TODO: bug when getting queue from spotify
 
+    // const getQueue = async () => {
+    //   const result = await fetch("https://api.spotify.com/v1/me/player/queue", {
+    //     methot: "GET",
+    //     headers: {
+    //       Authorization: "Bearer " + accessToken,
+    //     },
+    //   });
+
+    //   const response = await result.json();
+    //   if (isSubscribed) {
+    //     //console.log(response.queue);
+    //   }
+    // };
+
+    // get recommendations based on currently playing
+    if (isSubscribed) {
     setErrorMsg("Getting recommendations...");
-    spotifyApi
-      .getRecommendations({
-        seed_tracks: [currentSongId],
-        limit: 80,
-      })
-      .then((res) => {
-        setRecommendations(res.body.tracks);
-        setErrorMsg("");
-      })
-      .catch((err) => {
-        setErrorMsg("Can't get recommendations!");
-      });
-    spotifyApi
-      .getMyCurrentPlayingTrack()
-      .then((res) => {
-        let song_infos = res.body.item;
 
-        spotifyApi
-          .getAudioFeaturesForTrack(currentSongId)
-          .then((res) => {
-            song_infos["valence"] = res.body.valence;
-            song_infos["energy"] = res.body.energy;
+    
+      spotifyApi
+        .getRecommendations({
+          seed_tracks: [currentSongId],
+          limit: 80,
+        })
+        .then((res) => {
+          setRecommendations(res.body.tracks);
 
-            setCurrentSong(song_infos);
-          })
-          .catch((err) => {
-            console.log("something went wrong when getting track features");
-          });
-        setImgUrl(res.body.item.album.images[1].url);
-      })
-      .catch((err) => {
-        console.log("something went wrong when getting album url");
-      });
+          setErrorMsg("");
+        })
+        .catch((err) => {
+          setErrorMsg("Can't get recommendations!");
+        });
 
-    spotifyApi
-      .containsMySavedTracks([currentSongId])
-      .then((res) => {
-        // An array is returned, where the first element corresponds to the first track ID in the query
-        var trackIsInYourMusic = res.body[0];
+      spotifyApi
+        .getMyCurrentPlayingTrack()
+        .then((res) => {
+          let song_infos = res.body.item;
 
-        if (trackIsInYourMusic) {
-          setSongIsSaved(true);
-        } else {
-          setSongIsSaved(false);
-        }
-      })
-      .catch((err) => {
-        console.log("can't tell if the song is already in your library");
-      });
+          spotifyApi
+            .getAudioFeaturesForTrack(currentSongId)
+            .then((res) => {
+              song_infos["valence"] = res.body.valence;
+              song_infos["energy"] = res.body.energy;
 
-    if (currentSong) {
-      setHistory([...history, currentSong]);
+              setCurrentSong(song_infos);
+            })
+            .catch((err) => {
+              console.log("something went wrong when getting track features");
+            });
+
+          setImgUrl(res.body.item.album.images[1].url);
+        })
+        .catch((err) => {
+          console.log("something went wrong when getting album url");
+        });
+
+      spotifyApi
+        .containsMySavedTracks([currentSongId])
+        .then((res) => {
+          // An array is returned, where the first element corresponds to the first track ID in the query
+          var trackIsInYourMusic = res.body[0];
+
+          if (isSubscribed) {
+            if (trackIsInYourMusic) {
+              setSongIsSaved(true);
+            } else {
+              setSongIsSaved(false);
+            }
+          }
+        })
+        .catch((err) => {
+          console.log("can't tell if the song is already in your library");
+        });
+
+      // getQueue().catch((err) => {
+      //   console.log("error getting queue");
+      // });
+
+      if (currentSong) {
+        setHistory([...history, currentSong]);
+      }
     }
+
+    return () => (isSubscribed = false);
   }, [currentSongId]);
 
   useEffect(() => {
@@ -182,26 +214,46 @@ export default function Dashboard({ code }) {
   }, [imgUrl]);
 
   useEffect(() => {
-    if (!recommendations) return;
+    let isSubscribed = true;
+    if (!selectedSong) return;
 
-    let playback_queue = recommendations
-      .filter((song) => song.id !== selctedSong)
-      .map((song) => "spotify:track:" + song.id);
-
-    playback_queue.splice(0, 0, "spotify:track:" + selctedSong);
-    spotifyApi
-      .play({
-        uris: playback_queue,
-      })
-      .then(
-        function () {
+    if (isSubscribed) {
+      setErrorMsg("Getting recommendations...");
+      spotifyApi
+        .getRecommendations({
+          seed_tracks: [selectedSong],
+          limit: 20,
+        })
+        .then((res) => {
+          setQueue(res.body.tracks);
           setErrorMsg("");
-        },
-        function (err) {
-          setErrorMsg("Can't change song. Are you premium user?");
-        }
-      );
-  }, [selctedSong]);
+        })
+        .catch((err) => {
+          setErrorMsg("Can't get recommendations!");
+        });
+
+      let playback_queue = queue
+        .filter((song) => song.id !== selectedSong)
+        .map((song) => "spotify:track:" + song.id);
+
+      playback_queue.splice(0, 0, "spotify:track:" + selectedSong);
+
+      spotifyApi
+        .play({
+          uris: playback_queue,
+        })
+        .then(
+          function () {
+            setErrorMsg("");
+          },
+          function (err) {
+            setErrorMsg("Can't change song. Are you premium user?");
+          }
+        );
+    }
+
+    return () => (isSubscribed = false);
+  }, [selectedSong]);
 
   const suggestSongsPlane = (coordinates) => {
     if (!accessToken) return;
@@ -233,7 +285,6 @@ export default function Dashboard({ code }) {
           setErrorMsg("");
         })
         .catch((err) => {
-          //if the user making the request is non-premium, a 403 FORBIDDEN response code will be returned
           setErrorMsg("Can't start playback. Are you a premium user?");
         });
     } else {
@@ -250,29 +301,7 @@ export default function Dashboard({ code }) {
   //   getQueue().catch(() => {
   //     console.log("error while getting the queue");
   //   });
-  // }, [recommendations]);
-
-  const getQueue = async () => {
-    const result = await fetch("https://api.spotify.com/v1/me/player/queue", {
-      methot: "GET",
-      headers: {
-        Authorization: "Bearer " + accessToken,
-      },
-    }).catch((err) => {
-      console.log("error wwhile getting queue");
-    });
-
-    const response = await result.json();
-
-    // let future_songs = [];
-    // if (recommendations) {
-    //   future_songs = response.queue.concat(recommendations);
-    // } else {
-    //   future_songs = response.queue;
-    // }
-
-    setQueue(response.queue);
-  };
+  // }, []);
 
   const previousSong = () => {
     spotifyApi
@@ -313,16 +342,15 @@ export default function Dashboard({ code }) {
         backgroundColor: `rgb(${palette[0]})`,
       }}
     >
-      {menuSelection == "hist" ? (
+      {menuSelection === "hist" ? (
         <History
           className="visual"
           song={currentSong}
           history={history}
           colors={palette}
-          valenceEnergy={valEn}
           setSelHistSong={suggestSongsPlane}
         ></History>
-      ) : menuSelection == "main" ? (
+      ) : menuSelection === "main" ? (
         <Visual
           className="visual"
           song={currentSong}
@@ -332,13 +360,23 @@ export default function Dashboard({ code }) {
           playbackState={playing}
           setSelSong={setSelectedSong}
         ></Visual>
-      ) : menuSelection == "style" ? (
+      ) : menuSelection === "style" ? (
         <StyleTransfer
           className="visual"
           song={currentSongId}
           colors={palette}
           imageUrl={imgUrl}
+          setErrorMsg={setErrorMsg}
         ></StyleTransfer>
+      ) : null}
+
+      {showInfo ? (
+        <InfoPage
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowInfo(!showInfo);
+          }}
+        ></InfoPage>
       ) : null}
 
       <ReactTooltip />
@@ -395,7 +433,7 @@ export default function Dashboard({ code }) {
         </button>
       </div>
       <div className="playback-bar">
-        <div className="infos">
+        <div className="song-infos">
           {currentSong
             ? "🎵 " + currentSong.name + " - " + currentSong.artists[0].name
             : "..."}

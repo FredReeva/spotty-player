@@ -7,6 +7,7 @@ class History extends React.Component {
     super(props);
     this.myRef = React.createRef();
     this.selected_song = "";
+    this.margin = 100;
   }
 
   Sketch = (p) => {
@@ -15,11 +16,6 @@ class History extends React.Component {
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
-      // timeline.resizeCanvas(
-      //   this.props.song,
-      //   this.props.history,
-      //   this.props.colors
-      // );
     };
 
     p.preload = () => {
@@ -36,7 +32,7 @@ class History extends React.Component {
       p.imageMode(p.CENTER);
       timeline = new Timeline(p);
       if (this.props.history) {
-        timeline.initTimeline(this.props.history);
+        timeline.initTimeline(this.props.history, this.margin);
       }
     };
 
@@ -47,10 +43,32 @@ class History extends React.Component {
     };
 
     p.mouseClicked = () => {
-      this.props.setSelHistSong([
-        p.mouseX / p.windowWidth,
-        (p.windowHeight - p.mouseY) / p.windowHeight,
-      ]);
+      let valence_plane = p.constrain(
+        p.mouseX,
+        this.margin,
+        p.windowWidth - this.margin
+      );
+      let energy_plane = p.constrain(
+        p.mouseY,
+        this.margin,
+        p.windowHeight - this.margin
+      );
+      let valence = p.map(
+        valence_plane,
+        this.margin,
+        p.windowWidth - this.margin,
+        0,
+        1
+      );
+      let energy = p.map(
+        energy_plane,
+        this.margin,
+        p.windowHeight - this.margin,
+        1,
+        0
+      );
+      console.log([valence, energy]);
+      this.props.setSelHistSong([valence, energy]);
     };
 
     // p.mouseMoved = () => {

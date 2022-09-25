@@ -7,12 +7,9 @@ class Model {
     );
   }
 
-  loadModel(path) {
-    console.time("Load model");
-    return tf.loadGraphModel(path).then((model) => {
-      this._model = model;
-      console.timeEnd("Load model");
-    });
+  async loadModel(path) {
+    const model = await tf.loadGraphModel(path);
+    this._model = model;
   }
 
   preprocessImage(image) {
@@ -25,14 +22,11 @@ class Model {
 
   predict(image) {
     if (!this._model) return console.warn("Model not loaded yet!");
-    console.time("Stylization...");
 
     let prediction = this._model.predict(image);
 
-    console.timeEnd("Prediction");
     return prediction;
   }
-
 }
 
 export default Model;

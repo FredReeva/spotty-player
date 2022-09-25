@@ -5,11 +5,11 @@ class World {
     this.is_current_view = false;
     this.p5_ctx = p5_ctx;
     this.songs = [];
-    this.n_songs = 60;
+    this.n_songs = 50;
     this.queue_songs = 15;
     this.current_song = "";
     this.main_size = (2 * this.p5_ctx.windowHeight) / 3;
-    this.sizes = [300, 150];
+    this.sizes = [250, 100];
     this.center_pos = this.p5_ctx.createVector(0, 0);
     this.songs.push(
       new Song(true, this.p5_ctx, this.center_pos, this.main_size)
@@ -43,8 +43,7 @@ class World {
       this.p5_ctx.frameCount % 20 === 0 &&
       playing &&
       colors &&
-      recommendations &&
-      queue
+      recommendations
     ) {
       this.songs.forEach((song_circle, index) => {
         song_circle.mouseOver(colors[2]);
@@ -56,11 +55,14 @@ class World {
           song_circle.pos.setMag(0);
           if (index === 0) {
             song_circle.getSong(playing);
-          } else if (index <= this.queue_songs) {
-            song_circle.getSong(queue[index]);
           } else {
             song_circle.getSong(recommendations[index]);
           }
+
+          // else if (index <= this.queue_songs && queue !== []) {
+          //   song_circle.getSong(queue[index]);
+          // }
+
           this.songs[index].loadImage();
         });
 

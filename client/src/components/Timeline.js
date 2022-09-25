@@ -8,23 +8,24 @@ class Timeline {
     this.current_song = "";
     this.size = 80;
     this.alpha = 200;
+    
   }
 
-  initTimeline(past_songs) {
+  initTimeline(past_songs, margin) {
     past_songs.forEach((old_song) => {
       let valence = this.p5_ctx.map(
         old_song.valence,
         0,
         1,
-        -this.p5_ctx.windowWidth / 2,
-        this.p5_ctx.windowWidth / 2
+        -this.p5_ctx.windowWidth / 2 + margin,
+        this.p5_ctx.windowWidth / 2 - margin
       );
       let energy = this.p5_ctx.map(
         old_song.energy,
         0,
         1,
-        this.p5_ctx.windowHeight / 2,
-        -this.p5_ctx.windowHeight / 2
+        this.p5_ctx.windowHeight / 2 - margin,
+        -this.p5_ctx.windowHeight / 2 + margin
       );
 
       let song_pos = this.p5_ctx.createVector(valence, energy);
