@@ -5,11 +5,11 @@ class World {
     this.is_current_view = false;
     this.p5_ctx = p5_ctx;
     this.songs = [];
-    this.n_songs = 50;
+    this.n_songs = 70;
     this.queue_songs = 15;
     this.current_song = "";
-    this.main_size = (2 * this.p5_ctx.windowHeight) / 3;
-    this.sizes = [180, 180];
+    this.main_size = (1.5 * this.p5_ctx.windowHeight) / 3;
+    this.sizes = [this.main_size / 2.5, this.main_size / 3];
     this.center_pos = this.p5_ctx.createVector(0, 0);
     this.songs.push(
       new Song(true, this.p5_ctx, this.center_pos, this.main_size)
@@ -46,7 +46,7 @@ class World {
       recommendations
     ) {
       this.songs.forEach((song_circle, index) => {
-        song_circle.mouseOver(colors[2]);
+        //song_circle.mouseOver(colors[2]);
       });
 
       if (this.current_song !== playing.id) {
@@ -73,15 +73,19 @@ class World {
     this.songs.forEach((song_circle, index) => {
       if (index !== 0) {
         song_circle.gravitationalForce(this.songs[0]);
-        song_circle.applyFriction();
+        //song_circle.applyFriction();
         song_circle.applyForce();
+        if (playing) {
+          song_circle.applyDriftingVelocity(playing.energy);
+        }
+
         //song_circle.mouseMoveSong();
         song_circle.moveSong();
       }
       for (let i = this.songs.length - 1; i >= 0; i--) {
         if (i !== song_circle.id) song_circle.computeInteraction(this.songs[i]);
       }
-      song_circle.displayTooltip();
+
       song_circle.drawSong();
     });
 

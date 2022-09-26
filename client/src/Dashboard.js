@@ -20,8 +20,10 @@ import {
   IoPause,
   IoDisc,
   IoInformationCircle,
+  IoImages,
 } from "react-icons/io5";
 import InfoPage from "./components/InfoPage";
+import Gallery from "./components/Gallery";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: credentials.client_id,
@@ -94,6 +96,7 @@ export default function Dashboard({ code }) {
             setErrorMsg("");
           })
           .catch((err) => {
+            console.log("error");
             if (err.status === 429) {
               console.log("Limiting requests to spotify api...");
               setrequestTime(10000);
@@ -132,9 +135,8 @@ export default function Dashboard({ code }) {
 
     // get recommendations based on currently playing
     if (isSubscribed) {
-    setErrorMsg("Getting recommendations...");
+      setErrorMsg("Getting recommendations...");
 
-    
       spotifyApi
         .getRecommendations({
           seed_tracks: [currentSongId],
@@ -368,6 +370,8 @@ export default function Dashboard({ code }) {
           imageUrl={imgUrl}
           setErrorMsg={setErrorMsg}
         ></StyleTransfer>
+      ) : menuSelection === "gallery" ? (
+        <Gallery className="visual" colors={palette}></Gallery>
       ) : null}
 
       {showInfo ? (
@@ -411,7 +415,7 @@ export default function Dashboard({ code }) {
 
         <button
           className="button"
-          data-tip="History"
+          data-tip="Mood Selector"
           data-place="right"
           onClick={(e) => {
             e.stopPropagation();
@@ -422,7 +426,7 @@ export default function Dashboard({ code }) {
         </button>
         <button
           className="button"
-          data-tip="Style"
+          data-tip="Style Transfer"
           data-place="right"
           onClick={(e) => {
             e.stopPropagation();
@@ -431,6 +435,17 @@ export default function Dashboard({ code }) {
         >
           <IoColorPalette />
         </button>
+        {/* <button
+          className="button"
+          data-tip="Gallery"
+          data-place="right"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuSelection("gallery");
+          }}
+        >
+          <IoImages />
+        </button> */}
       </div>
       <div className="playback-bar">
         <div className="song-infos">

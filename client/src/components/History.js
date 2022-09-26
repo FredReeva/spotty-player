@@ -67,7 +67,6 @@ class History extends React.Component {
         1,
         0
       );
-      console.log([valence, energy]);
       this.props.setSelHistSong([valence, energy]);
     };
 

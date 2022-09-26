@@ -9,6 +9,8 @@ class Song {
       this.draw_context.windowWidth / 2,
       this.draw_context.windowHeight / 2
     );
+    this.j = 0;
+    this.i = 0;
     this.border_alpha = 10;
     this.border = 5;
     this.pos = position;
@@ -55,6 +57,9 @@ class Song {
     this.vel.limit(0.5);
     this.pos.add(this.vel);
 
+    //this.limitBorders();
+    this.wrapBorders();
+
     this.acc.mult(0);
     this.force.mult(0);
   }
@@ -84,16 +89,39 @@ class Song {
     );
   }
 
-  limitBorders() {
-    let border_top = -this.draw_context.windowHeight / 2;
-    let border_bottom = this.draw_context.windowHeight / 2;
+  wrapBorders() {
+    let mult = 3;
+    let border_top = -this.draw_context.windowHeight / 2 - mult * this.size;
+
+    let border_bottom = this.draw_context.windowHeight / 2 + mult * this.size;
+
     if (this.pos.y < border_top) {
-      this.pos.y = border_top;
-    }
-    if (this.pos.y > border_bottom) {
       this.pos.y = border_bottom;
     }
+    if (this.pos.y > border_bottom) {
+      this.pos.y = border_top;
+    }
+
+    let border_left = -this.draw_context.windowWidth / 2 - mult * this.size;
+    let border_right = this.draw_context.windowWidth / 2 + mult * this.size;
+    if (this.pos.x < border_left) {
+      this.pos.x = border_right;
+    }
+    if (this.pos.x > border_right) {
+      this.pos.x = border_left;
+    }
   }
+
+  // limitBorders() {
+  //   let border_top = -this.draw_context.windowHeight / 2;
+  //   let border_bottom = this.draw_context.windowHeight / 2;
+  //   if (this.pos.y < border_top) {
+  //     this.pos.y = border_top;
+  //   }
+  //   if (this.pos.y > border_bottom) {
+  //     this.pos.y = border_bottom;
+  //   }
+  // }
 
   computeInteraction(other) {
     //this.repulsionForce(other);
@@ -108,7 +136,6 @@ class Song {
 
       //this.applyCollisionFriction();
     }
-    this.limitBorders();
   }
 
   // repulsionForce(other) {
@@ -122,6 +149,19 @@ class Song {
   //   let repulsion_force = repulsion_vector.setMag(mag);
   //   this.force.add(repulsion_force);
   // }
+
+  applyDriftingVelocity(energy) {
+    let wind_direction = this.draw_context.noise(this.i) * 4 * Math.PI;
+
+    let wind = this.draw_context.constructor.Vector.fromAngle(wind_direction);
+
+    wind.mult(energy);
+
+    this.vel.add(wind);
+
+    this.j += 0.0005;
+    this.i += 0.0005;
+  }
 
   gravitationalForce(attractor_mass) {
     let center_gravity = attractor_mass.pos.copy();
@@ -137,6 +177,7 @@ class Song {
     friction.normalize();
     friction.mult(-1);
     friction.setMag(this.vel.mag());
+    this.applyCollisionFriction();
     this.force.add(friction);
   }
 
@@ -180,20 +221,6 @@ class Song {
   applyForce() {
     this.force.div(this.size);
     this.acc.add(this.force);
-  }
-
-  displayTooltip() {
-    // if (this.show_tooltip) {
-    //   this.text.textFont("Source Code Pro");
-    //   this.text.textSize(10);
-    //   this.text.fill(0, 0, 0);
-    //   this.text.noStroke();
-    //   this.text.text(
-    //     "test",
-    //     this.draw_context.windowWidth,
-    //     this.draw_context.windowHeight
-    //   );
-    // }
   }
 
   // mouseMoveSong() {

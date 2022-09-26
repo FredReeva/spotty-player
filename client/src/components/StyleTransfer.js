@@ -17,13 +17,12 @@ export default function StyleTransfer(props) {
   const [photo, setPhoto] = useState(null);
   const [stream, setStream] = useState(null);
   const [image, setImage] = useState(null);
-  const [albumCover, setAlbumCover] = useState(null);
   const [resultImg, setResultImg] = useState(null);
   const [model, setModel] = useState(null);
   const [contentSrc, setContentSrc] = useState(null);
   const videoSettings = {
-    width: 400,
-    height: 400,
+    width: 500,
+    height: 500,
     facingMode: "user",
   };
 
@@ -107,83 +106,97 @@ export default function StyleTransfer(props) {
 
   useEffect(() => {
     let transform_model = new Model(
-      "./models/saved_model_transformer_js/model.json"
+      "./models/saved_model_transformer_separable_js/model.json"
     );
     let style_model = new Model("./models/saved_model_style_js/model.json");
     setModel([style_model, transform_model]);
   }, []);
 
   async function styleButtonPressed() {
-    await takePicture();
+    await computeStyleTransfer();
+  }
+
+  async function computeStyleTransfer() {
+    let img_content;
+    if (webcam) {
+      img_content = await takePicture();
+    } else {
+      img_content = photo;
+    }
+
+    await loadAlbumImage();
+
+    props.setErrorMsg("Computing Style Transfer...");
+
+    const img_style = document.getElementById("image-style");
+
+    //const img_content = document.getElementById(contentSrc);
+
+    let processed_content_image = model[0].preprocessImage(img_content);
+    let processed_style_image = model[0].preprocessImage(img_style);
+
+    await tf.nextFrame();
+    const style_image = await tf.tidy(() => {
+      return model[0].predict(processed_style_image);
+    });
+
+    await tf.nextFrame();
+    const content_image = await tf.tidy(() => {
+      return model[0].predict(processed_content_image);
+    });
+
+    await tf.nextFrame();
+    const combine = await tf.tidy(() => {
+      const style_image_scaled = style_image.mul(tf.scalar(0.9));
+      const content_image_scaled = content_image.mul(tf.scalar(1.0 - 0.9));
+      return style_image_scaled.add(content_image_scaled);
+    });
+
+    await tf.nextFrame();
+    const stylized = await tf.tidy(() => {
+      return model[1].predict([processed_content_image, combine]).squeeze();
+    });
+
+    await tf.nextFrame();
+    const result = await tf.browser.toPixels(stylized);
+    await tf.nextFrame();
+
+    const imgData = new ImageData(result, 500, 500);
+
+    var canvas = document.createElement("canvas");
+    canvas.width = 500;
+    canvas.height = 500;
+    var ctx = canvas.getContext("2d");
+    ctx.putImageData(imgData, 0, 0);
+
+    setResultImg(canvas.toDataURL("image/png"));
+
+    style_image.dispose();
+    content_image.dispose();
+    stylized.dispose();
+    props.setErrorMsg("");
+  }
+
+  async function loadAlbumImage() {
+    const img = new Image();
+
+    return new Promise((resolve, reject) => {
+      img.addEventListener("load", () => {
+        resolve();
+      });
+
+      img.addEventListener("error", () => {
+        reject();
+      });
+
+      img.src = props.imageUrl;
+    });
   }
 
   useEffect(() => {
-    setAlbumCover(props.imageUrl);
-  }, [props.imageUrl]);
-
-  useEffect(() => {
-    async function computeStyleTransfer() {
-      props.setErrorMsg("Computing Style Transfer...");
-
-      const img_style = document.getElementById("image-style");
-
-      const img_content = document.getElementById(contentSrc);
-
-      let processed_content_image = model[0].preprocessImage(img_content);
-      let processed_style_image = model[0].preprocessImage(img_style);
-
-      await tf.nextFrame();
-      const style_image = await tf.tidy(() => {
-        return model[0].predict(processed_style_image);
-      });
-
-      await tf.nextFrame();
-      const content_image = await tf.tidy(() => {
-        return model[0].predict(processed_content_image);
-      });
-
-      await tf.nextFrame();
-      const combine = await tf.tidy(() => {
-        const style_image_scaled = style_image.mul(tf.scalar(0.9));
-        const content_image_scaled = content_image.mul(tf.scalar(1.0 - 0.9));
-        return style_image_scaled.add(content_image_scaled);
-      });
-
-      await tf.nextFrame();
-      const stylized = await tf.tidy(() => {
-        return model[1].predict([processed_content_image, combine]).squeeze();
-      });
-
-      await tf.nextFrame();
-      const result = await tf.browser.toPixels(stylized);
-      await tf.nextFrame();
-
-      const imgData = new ImageData(result, 200, 200);
-
-      var canvas = document.createElement("canvas");
-      canvas.width = 200;
-      canvas.height = 200;
-      var ctx = canvas.getContext("2d");
-      ctx.putImageData(imgData, 0, 0);
-
-      //ctx.fillRect(0, 0, 100, 100);
-
-      //document.body.appendChild(img_res);
-
-      setResultImg(canvas.toDataURL("image/png"));
-
-      style_image.dispose();
-      content_image.dispose();
-      stylized.dispose();
-      props.setErrorMsg("");
-    }
-
+    if (!model || !photo) return;
     computeStyleTransfer();
-  }, [photo]);
-
-  // useEffect(() => {
-  //   computeStyleTransfer();
-  // }, [albumCover]);
+  }, [model, props.imageUrl]);
 
   async function takePicture() {
     console.log("taking a picture");
@@ -196,7 +209,8 @@ export default function StyleTransfer(props) {
     var ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
-    setPhoto(canvas.toDataURL("image/png"));
+    setPhoto(ctx.getImageData(0, 0, videoSettings.width, videoSettings.height));
+    return ctx.getImageData(0, 0, videoSettings.width, videoSettings.height);
   }
 
   return (
@@ -214,7 +228,15 @@ export default function StyleTransfer(props) {
       />
 
       {resultImg ? (
-        <img id="result" alt="" className="result-image" src={resultImg} />
+        <img
+          id="result"
+          alt=""
+          className="result-image"
+          src={resultImg}
+          style={{
+            borderColor: `rgb(${props.colors[2]})`,
+          }}
+        />
       ) : null}
 
       {image ? (
@@ -222,6 +244,9 @@ export default function StyleTransfer(props) {
           id="image-content"
           alt=""
           className="upload-image"
+          style={{
+            borderColor: `rgb(${props.colors[1]})`,
+          }}
           src={URL.createObjectURL(image)}
         />
       ) : null}
@@ -232,27 +257,29 @@ export default function StyleTransfer(props) {
           alt=""
           className="style-image"
           crossOrigin="anonymous"
-          src={albumCover}
+          style={{
+            borderColor: `rgb(${props.colors[1]})`,
+          }}
+          src={props.imageUrl}
         />
       ) : null}
 
-      {webcam ? (
-        <img id="photo" alt="" className="video-player" src={photo} />
-      ) : null}
       {webcam ? (
         <video
           id="webcam"
           ref={videoRef}
           className="video-player"
+          style={{
+            borderColor: `rgb(${props.colors[1]})`,
+          }}
           onClick={() => {
             takePicture();
           }}
         />
       ) : null}
 
-      <ReactTooltip />
-
       <div className="styletrans-bar">
+        <ReactTooltip />
         {/* <button
           className="button"
           data-tip="Image"
@@ -284,7 +311,7 @@ export default function StyleTransfer(props) {
           {!webcam ? <IoVideocam /> : <IoVideocamOff />}
         </button>
 
-        {webcam || image ? (
+        {webcam ? (
           <button
             className="button"
             data-tip="Style Transfer"
@@ -300,7 +327,21 @@ export default function StyleTransfer(props) {
           >
             <IoSparkles />
           </button>
-        ) : null}
+        ) : (
+          <button
+            className="button"
+            data-tip="Style Transfer"
+            data-place="top"
+            style={{
+              borderRadius: "10em",
+              padding: "0.8em",
+              backgroundColor: "rgba(0,0,0,0.1)",
+              cursor: "not-allowed",
+            }}
+          >
+            <IoSparkles />
+          </button>
+        )}
       </div>
     </div>
   );
