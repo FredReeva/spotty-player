@@ -5,11 +5,11 @@ class World {
     this.is_current_view = false;
     this.p5_ctx = p5_ctx;
     this.songs = [];
-    this.n_songs = 70;
-    this.history_songs = 5;
+    this.n_songs = 80;
+    this.history_songs = 10;
     this.current_song = "";
     this.main_size = (1.5 * this.p5_ctx.windowHeight) / 3;
-    this.sizes = [this.main_size / 2.5, this.main_size / 3];
+    this.sizes = [this.main_size / 3, this.main_size / 2.5];
     this.center_pos = this.p5_ctx.createVector(0, 0);
     this.songs.push(
       new Song(true, this.p5_ctx, this.center_pos, this.main_size)
@@ -24,7 +24,7 @@ class World {
     while (n < this.n_songs) {
       let song_pos = this.p5_ctx.createVector(0, 0);
 
-      if (n <= this.queue_songs) {
+      if (n <= this.history_songs) {
         size = this.sizes[0];
       } else {
         size = this.sizes[1];
@@ -57,11 +57,11 @@ class World {
             song_circle.getSong(playing);
           } else if (
             index <= this.history_songs &&
-            history.length > 1 &&
-            index < history.length
+            history.length > 0 &&
+            index <= history.length
           ) {
-            song_circle.getSong(history[history.length - 2 - index]);
-            song_circle.size = 20;
+            song_circle.getSong(history[history.length - index]);
+            song_circle.is_history = true;
           } else {
             song_circle.getSong(recommendations[index]);
           }

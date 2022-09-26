@@ -12,6 +12,7 @@ class Song {
     this.j = 0;
     this.i = 0;
     this.border_alpha = 10;
+    this.is_history = false;
     this.border = 5;
     this.pos = position;
     this.dragging = false;
@@ -80,6 +81,11 @@ class Song {
       this.draw_context.texture(this.img);
     }
 
+    if (this.is_history) {
+      this.draw_context.tint(200, 150);
+    } else {
+      this.draw_context.tint(255);
+    }
     this.draw_context.ellipse(
       this.pos.x,
       this.pos.y,

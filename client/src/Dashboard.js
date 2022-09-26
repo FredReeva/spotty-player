@@ -21,6 +21,8 @@ import {
   IoDisc,
   IoInformationCircle,
   IoImages,
+  IoHeartOutline,
+  IoHeart,
 } from "react-icons/io5";
 import InfoPage from "./components/InfoPage";
 import Gallery from "./components/Gallery";
@@ -170,6 +172,7 @@ export default function Dashboard({ code }) {
                   song_infos["energy"] = res.body.energy;
 
                   setCurrentSong(song_infos);
+                  setGallery([...gallery]);
                 }
               })
               .catch((err) => {
@@ -268,6 +271,29 @@ export default function Dashboard({ code }) {
 
     return () => (isSubscribed = false);
   }, [selectedSong]);
+
+  async function setCorrectGallery(src) {
+    spotifyApi
+      .getMyCurrentPlayingTrack()
+      .then((res) => {
+        if (res && res.body.item) {
+          let title = res.body.item.name;
+          let artist = res.body.item.artists[0].name;
+
+          setGallery([
+            ...gallery,
+            {
+              title: title,
+              artist: artist,
+              src: src,
+            },
+          ]);
+        }
+      })
+      .catch((err) => {
+        console.log("Error cetting gallery infos.");
+      });
+  }
 
   const suggestSongsPlane = (coordinates) => {
     if (!accessToken) return;
@@ -379,7 +405,9 @@ export default function Dashboard({ code }) {
           colors={palette}
           setSelHistSong={suggestSongsPlane}
         ></History>
-      ) : menuSelection === "main" ? (
+      ) : null}
+
+      {menuSelection === "main" ? (
         <Visual
           className="visual"
           song={currentSong}
@@ -390,25 +418,19 @@ export default function Dashboard({ code }) {
           playbackState={playing}
           setSelSong={setSelectedSong}
         ></Visual>
-      ) : menuSelection === "style" ? (
+      ) : null}
+
+      {menuSelection === "style" ? (
         <StyleTransfer
           className="visual"
           song={currentSongId}
           colors={palette}
           imageUrl={imgUrl}
           setErrorMsg={setErrorMsg}
-          setGallery={(src) =>
-            setGallery([
-              ...gallery,
-              {
-                title: currentSong.name,
-                artist: currentSong.artists[0].name,
-                src: src,
-              },
-            ])
-          }
+          setGallery={(src) => setCorrectGallery(src)}
         ></StyleTransfer>
-      ) : menuSelection === "gallery" ? (
+      ) : null}
+      {menuSelection === "gallery" ? (
         <Gallery
           className="visual"
           colors={palette}
@@ -445,7 +467,7 @@ export default function Dashboard({ code }) {
       <div className="menu-bar">
         <button
           className="button"
-          data-tip="Visual"
+          data-tip="Globes"
           data-place="right"
           onClick={(e) => {
             e.stopPropagation();
@@ -540,7 +562,7 @@ export default function Dashboard({ code }) {
               addToLibrary();
             }}
           >
-            {songIsSaved ? <IoCheckmark /> : <IoAdd />}
+            {songIsSaved ? <IoHeart /> : <IoHeartOutline />}
           </button>
         </div>
       </div>

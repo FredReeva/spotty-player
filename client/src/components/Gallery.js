@@ -12,15 +12,33 @@ export default function Gallery(props) {
         {props.gallery.length > 0 ? (
           props.gallery.map((photo, i) => {
             return (
-              <img
-                className="gallery-photo"
-                src={photo.src}
-                key={i}
-                alt=""
-                style={{
-                  borderColor: `rgb(${props.colors[1]})`,
-                }}
-              ></img>
+              <div className="gallery-photo-container">
+                <img
+                  className="gallery-photo"
+                  src={photo.src}
+                  key={i}
+                  alt=""
+                  style={{
+                    borderColor: `rgb(${props.colors[1]})`,
+                  }}
+                ></img>
+                <div
+                  className="gallery-text"
+                  style={{
+                    color: `rgb(${props.colors[1]})`,
+                  }}
+                >
+                  🎶{photo.title}
+                </div>
+                <div
+                  className="gallery-text"
+                  style={{
+                    color: `rgb(${props.colors[1]})`,
+                  }}
+                >
+                  👤{photo.artist}
+                </div>
+              </div>
             );
           })
         ) : (

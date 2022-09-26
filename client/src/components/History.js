@@ -22,7 +22,7 @@ class History extends React.Component {
       let happy = p.loadImage("assets/happy.png");
       let sad = p.loadImage("assets/sad.png");
       let energy = p.loadImage("assets/energy.png");
-      let calm = p.loadImage("assets/calm.png");
+      let calm = p.loadImage("assets/zzz.png");
 
       img_emoji = [happy, energy, sad, calm];
     };

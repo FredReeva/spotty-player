@@ -110,6 +110,18 @@ export default function StyleTransfer(props) {
     );
     let style_model = new Model("./models/saved_model_style_js/model.json");
     setModel([style_model, transform_model]);
+
+    return () => {
+      if (stream !== null) {
+        stream.getVideoTracks().forEach((track) => {
+          track.stop();
+        });
+        setStream(null);
+        setWebcam(false);
+        setContentSrc(null);
+        setModel(null);
+      }
+    };
   }, []);
 
   async function styleButtonPressed() {
@@ -170,7 +182,7 @@ export default function StyleTransfer(props) {
     ctx.putImageData(imgData, 0, 0);
 
     setResultImg(canvas.toDataURL("image/png"));
-    props.setGallery(canvas.toDataURL("image/png"))
+    props.setGallery(canvas.toDataURL("image/png"));
 
     style_image.dispose();
     content_image.dispose();
@@ -299,7 +311,7 @@ export default function StyleTransfer(props) {
         <button
           className="button"
           data-tip="Webcam"
-          data-place="top"
+          data-place="bottom"
           style={{
             borderRadius: "10em",
             padding: "0.8em",
@@ -316,7 +328,7 @@ export default function StyleTransfer(props) {
           <button
             className="button"
             data-tip="Style Transfer"
-            data-place="top"
+            data-place="bottom"
             style={{
               borderRadius: "10em",
               padding: "0.8em",
@@ -332,7 +344,7 @@ export default function StyleTransfer(props) {
           <button
             className="button inactive"
             data-tip="Style Transfer"
-            data-place="top"
+            data-place="bottom"
           >
             <IoSparkles />
           </button>
