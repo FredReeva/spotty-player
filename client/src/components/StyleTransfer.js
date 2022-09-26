@@ -170,6 +170,7 @@ export default function StyleTransfer(props) {
     ctx.putImageData(imgData, 0, 0);
 
     setResultImg(canvas.toDataURL("image/png"));
+    props.setGallery(canvas.toDataURL("image/png"))
 
     style_image.dispose();
     content_image.dispose();
