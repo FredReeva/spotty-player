@@ -6,7 +6,7 @@ export default function InfoPage(props) {
       <div className="info-page-text">
         <h1>Spotty-Player 🫧</h1>
         <div className="main-infos">
-          <p>-a Spotify Player and Visualizer</p>
+          <p>-Spotify Player and Visualizer</p>
           <p>
             Play something on any of your devices connected to
             Spotify to start your journey ▶️
