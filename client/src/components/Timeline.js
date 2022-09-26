@@ -129,8 +129,8 @@ class Timeline {
     // vertical arrow
 
     let size_inv_x = 3;
-    let size_inv_y = 3;
-    let y_offset = -50;
+    let size_inv_y = 3.5;
+    let y_offset = -30;
     let half_vert_size = this.p5_ctx.windowHeight / size_inv_y;
     let half_hor_size = this.p5_ctx.windowWidth / size_inv_x;
     this.p5_ctx.line(

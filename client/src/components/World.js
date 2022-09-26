@@ -56,6 +56,7 @@ class World {
           if (index === 0) {
             song_circle.getSong(playing);
           } else if (
+            history &&
             index <= this.history_songs &&
             history.length > 0 &&
             index <= history.length
