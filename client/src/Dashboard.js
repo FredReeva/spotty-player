@@ -262,7 +262,7 @@ export default function Dashboard({ code }) {
         })
 
         .catch((err) => {
-          setErrorMsg("Can't change song. Are you premium user?");
+          setErrorMsg("Can't change song. Are you a premium user?");
         });
     }
 
@@ -371,7 +371,7 @@ export default function Dashboard({ code }) {
         backgroundColor: `rgb(${palette[0]})`,
       }}
     >
-      {menuSelection === "hist" ? (
+      {menuSelection === "mood" ? (
         <History
           className="visual"
           song={currentSong}
@@ -384,6 +384,7 @@ export default function Dashboard({ code }) {
           className="visual"
           song={currentSong}
           queue={queue}
+          history={history}
           recommendations={recommendations}
           colors={palette}
           playbackState={playing}
@@ -460,7 +461,7 @@ export default function Dashboard({ code }) {
           data-place="right"
           onClick={(e) => {
             e.stopPropagation();
-            setMenuSelection("hist");
+            setMenuSelection("mood");
           }}
         >
           <IoAnalytics />
@@ -476,17 +477,27 @@ export default function Dashboard({ code }) {
         >
           <IoColorPalette />
         </button>
-        <button
-          className="button"
-          data-tip="Gallery"
-          data-place="right"
-          onClick={(e) => {
-            e.stopPropagation();
-            setMenuSelection("gallery");
-          }}
-        >
-          <IoImages />
-        </button>
+        {gallery.length > 0 ? (
+          <button
+            className="button"
+            data-tip="Gallery"
+            data-place="right"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuSelection("gallery");
+            }}
+          >
+            <IoImages />
+          </button>
+        ) : (
+          <button
+            className="button inactive"
+            data-tip="Gallery"
+            data-place="right"
+          >
+            <IoImages />
+          </button>
+        )}
       </div>
       <div className="playback-bar">
         <div className="song-infos">

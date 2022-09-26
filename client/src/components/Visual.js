@@ -18,7 +18,6 @@ class Visual extends React.Component {
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-      // p.cursor("pointer");
 
       world = new World(p);
     };
@@ -27,7 +26,7 @@ class Visual extends React.Component {
       p.frameRate(60);
       world.drawWorld(
         this.props.song,
-        this.props.queue,
+        this.props.history,
         this.props.recommendations,
         this.props.colors
       );
@@ -40,9 +39,9 @@ class Visual extends React.Component {
       }
     };
 
-    p.mouseDragged = () => {
-      world.getMouseDragged();
-    };
+    // p.mouseDragged = () => {
+    //   world.getMouseDragged();
+    // };
   };
 
   componentDidMount() {

@@ -6,7 +6,7 @@ class World {
     this.p5_ctx = p5_ctx;
     this.songs = [];
     this.n_songs = 70;
-    this.queue_songs = 15;
+    this.history_songs = 5;
     this.current_song = "";
     this.main_size = (1.5 * this.p5_ctx.windowHeight) / 3;
     this.sizes = [this.main_size / 2.5, this.main_size / 3];
@@ -37,7 +37,7 @@ class World {
     }
   }
 
-  drawWorld(playing, queue, recommendations, colors) {
+  drawWorld(playing, history, recommendations, colors) {
     this.p5_ctx.background(colors[0]);
     if (
       this.p5_ctx.frameCount % 20 === 0 &&
@@ -55,6 +55,13 @@ class World {
           song_circle.pos.setMag(0);
           if (index === 0) {
             song_circle.getSong(playing);
+          } else if (
+            index <= this.history_songs &&
+            history.length > 1 &&
+            index < history.length
+          ) {
+            song_circle.getSong(history[history.length - 2 - index]);
+            song_circle.size = 20;
           } else {
             song_circle.getSong(recommendations[index]);
           }
@@ -78,8 +85,6 @@ class World {
         if (playing) {
           song_circle.applyDriftingVelocity(playing.energy);
         }
-
-        //song_circle.mouseMoveSong();
         song_circle.moveSong();
       }
       for (let i = this.songs.length - 1; i >= 0; i--) {
@@ -92,11 +97,11 @@ class World {
     this.p5_ctx.noStroke();
   }
 
-  getMouseDragged() {
-    for (let i = 1; i < this.n_songs; i++) {
-      this.songs[i].songDragged();
-    }
-  }
+  // getMouseDragged() {
+  //   for (let i = 1; i < this.n_songs; i++) {
+  //     this.songs[i].songDragged();
+  //   }
+  // }
 
   getMouseClicked() {
     for (let i = 1; i < this.n_songs; i++) {

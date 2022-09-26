@@ -330,15 +330,9 @@ export default function StyleTransfer(props) {
           </button>
         ) : (
           <button
-            className="button"
+            className="button inactive"
             data-tip="Style Transfer"
             data-place="top"
-            style={{
-              borderRadius: "10em",
-              padding: "0.8em",
-              backgroundColor: "rgba(0,0,0,0.1)",
-              cursor: "not-allowed",
-            }}
           >
             <IoSparkles />
           </button>

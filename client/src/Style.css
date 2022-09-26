@@ -83,9 +83,16 @@
   color: white;
   background-color: var(--button-color);
   border: none;
+  cursor: pointer;
   border-style: solid;
   border-color: rgba(255, 255, 255, 0.5);
   z-index: 2;
+}
+
+.inactive {
+  padding: 0.8em;
+  background-color: rgba(0, 0, 0, 0.1);
+  cursor: not-allowed !important;
 }
 
 .playback-bar:hover .button,
@@ -273,7 +280,7 @@ h1 {
 
 .main-infos {
   margin-top: clamp(1em, 5vh, 2em);
-  font-size: clamp(0.7em, 2vw, 1em);
+  font-size: clamp(0.7em, 1.4vw, 1em);
 
   width: 60%;
   user-select: none;
