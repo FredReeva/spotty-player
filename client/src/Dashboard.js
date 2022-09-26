@@ -92,7 +92,7 @@ export default function Dashboard({ code }) {
         spotifyApi
           .getMyCurrentPlaybackState()
           .then((res) => {
-            if (res.body.is_playing && res.body.item.id) {
+            if (res.body && res.body.item.id) {
               setPlaying(res.body.is_playing);
               setCurrentSongId(res.body.item.id);
               setErrorMsg("");
@@ -294,7 +294,7 @@ export default function Dashboard({ code }) {
   const togglePlayback = () => {
     if (!playing) {
       spotifyApi
-        .play()
+        .play({})
         .then((res) => {
           if (res) {
             setPlaying(true);
