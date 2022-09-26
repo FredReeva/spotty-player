@@ -44,6 +44,7 @@ export default function Dashboard({ code }) {
   const [errorMsg, setErrorMsg] = useState("");
   const [playing, setPlaying] = useState(false);
   const [showInfo, setShowInfo] = useState(true);
+  const [gallery, setGallery] = useState([]);
   const [palette, setPalette] = useState([
     [255, 255, 255],
     [0, 0, 0],
@@ -91,12 +92,14 @@ export default function Dashboard({ code }) {
         spotifyApi
           .getMyCurrentPlaybackState()
           .then((res) => {
-            setPlaying(res.body.is_playing);
-            setCurrentSongId(res.body.item.id);
-            setErrorMsg("");
+            if (res.body.is_playing && res.body.item.id) {
+              setPlaying(res.body.is_playing);
+              setCurrentSongId(res.body.item.id);
+              setErrorMsg("");
+            }
           })
           .catch((err) => {
-            console.log("error");
+            console.log("error", err);
             if (err.status === 429) {
               console.log("Limiting requests to spotify api...");
               setrequestTime(10000);
@@ -143,9 +146,11 @@ export default function Dashboard({ code }) {
           limit: 80,
         })
         .then((res) => {
-          setRecommendations(res.body.tracks);
+          if (res) {
+            setRecommendations(res.body.tracks);
 
-          setErrorMsg("");
+            setErrorMsg("");
+          }
         })
         .catch((err) => {
           setErrorMsg("Can't get recommendations!");
@@ -154,21 +159,25 @@ export default function Dashboard({ code }) {
       spotifyApi
         .getMyCurrentPlayingTrack()
         .then((res) => {
-          let song_infos = res.body.item;
+          if (res && res.body.item) {
+            let song_infos = res.body.item;
 
-          spotifyApi
-            .getAudioFeaturesForTrack(currentSongId)
-            .then((res) => {
-              song_infos["valence"] = res.body.valence;
-              song_infos["energy"] = res.body.energy;
+            spotifyApi
+              .getAudioFeaturesForTrack(currentSongId)
+              .then((res) => {
+                if (res) {
+                  song_infos["valence"] = res.body.valence;
+                  song_infos["energy"] = res.body.energy;
 
-              setCurrentSong(song_infos);
-            })
-            .catch((err) => {
-              console.log("something went wrong when getting track features");
-            });
+                  setCurrentSong(song_infos);
+                }
+              })
+              .catch((err) => {
+                console.log("something went wrong when getting track features");
+              });
 
-          setImgUrl(res.body.item.album.images[1].url);
+            setImgUrl(res.body.item.album.images[1].url);
+          }
         })
         .catch((err) => {
           console.log("something went wrong when getting album url");
@@ -177,14 +186,16 @@ export default function Dashboard({ code }) {
       spotifyApi
         .containsMySavedTracks([currentSongId])
         .then((res) => {
-          // An array is returned, where the first element corresponds to the first track ID in the query
-          var trackIsInYourMusic = res.body[0];
+          if (res) {
+            // An array is returned, where the first element corresponds to the first track ID in the query
+            var trackIsInYourMusic = res.body[0];
 
-          if (isSubscribed) {
-            if (trackIsInYourMusic) {
-              setSongIsSaved(true);
-            } else {
-              setSongIsSaved(false);
+            if (isSubscribed) {
+              if (trackIsInYourMusic) {
+                setSongIsSaved(true);
+              } else {
+                setSongIsSaved(false);
+              }
             }
           }
         })
@@ -227,8 +238,10 @@ export default function Dashboard({ code }) {
           limit: 20,
         })
         .then((res) => {
-          setQueue(res.body.tracks);
-          setErrorMsg("");
+          if (res) {
+            setQueue(res.body.tracks);
+            setErrorMsg("");
+          }
         })
         .catch((err) => {
           setErrorMsg("Can't get recommendations!");
@@ -244,14 +257,13 @@ export default function Dashboard({ code }) {
         .play({
           uris: playback_queue,
         })
-        .then(
-          function () {
-            setErrorMsg("");
-          },
-          function (err) {
-            setErrorMsg("Can't change song. Are you premium user?");
-          }
-        );
+        .then(() => {
+          setErrorMsg("");
+        })
+
+        .catch((err) => {
+          setErrorMsg("Can't change song. Are you premium user?");
+        });
     }
 
     return () => (isSubscribed = false);
@@ -269,9 +281,10 @@ export default function Dashboard({ code }) {
         target_valence: coordinates[0],
       })
       .then((res) => {
-        setSelectedSong(res.body.tracks[0].id);
-
-        setErrorMsg("");
+        if (res) {
+          setSelectedSong(res.body.tracks[0].id);
+          setErrorMsg("");
+        }
       })
       .catch((err) => {
         setErrorMsg("Can't get recommendations!");
@@ -281,10 +294,12 @@ export default function Dashboard({ code }) {
   const togglePlayback = () => {
     if (!playing) {
       spotifyApi
-        .play({})
-        .then(() => {
-          setPlaying(true);
-          setErrorMsg("");
+        .play()
+        .then((res) => {
+          if (res) {
+            setPlaying(true);
+            setErrorMsg("");
+          }
         })
         .catch((err) => {
           setErrorMsg("Can't start playback. Are you a premium user?");
@@ -292,7 +307,11 @@ export default function Dashboard({ code }) {
     } else {
       spotifyApi
         .pause()
-        .then(() => setPlaying(false))
+        .then((res) => {
+          if (res) {
+            setPlaying(false);
+          }
+        })
         .catch((err) => {
           console.log("Something went wrong when pausing song");
         });
@@ -307,8 +326,11 @@ export default function Dashboard({ code }) {
 
   const previousSong = () => {
     spotifyApi
-      .skipToPrevious(() => {
-        setErrorMsg("");
+      .skipToPrevious()
+      .then((res) => {
+        if (res) {
+          setErrorMsg("");
+        }
       })
       .catch((err) => {
         setErrorMsg("Can't change song");
@@ -317,8 +339,11 @@ export default function Dashboard({ code }) {
 
   const nextSong = () => {
     spotifyApi
-      .skipToNext(() => {
-        setErrorMsg("");
+      .skipToNext()
+      .then((res) => {
+        if (res) {
+          setErrorMsg("");
+        }
       })
       .catch((err) => {
         setErrorMsg("Can't change song. Are you a premium user?");
@@ -328,9 +353,11 @@ export default function Dashboard({ code }) {
   const addToLibrary = () => {
     spotifyApi
       .addToMySavedTracks([currentSongId])
-      .then(() => {
-        console.log("Added to library");
-        setSongIsSaved(true);
+      .then((res) => {
+        if (res) {
+          console.log("Added to library");
+          setSongIsSaved(true);
+        }
       })
       .catch((err) => {
         console.log("Can't add song to library");
@@ -369,9 +396,23 @@ export default function Dashboard({ code }) {
           colors={palette}
           imageUrl={imgUrl}
           setErrorMsg={setErrorMsg}
+          setGallery={(src) =>
+            setGallery([
+              ...gallery,
+              {
+                title: currentSong.name,
+                artist: currentSong.artists[0].name,
+                src: src,
+              },
+            ])
+          }
         ></StyleTransfer>
       ) : menuSelection === "gallery" ? (
-        <Gallery className="visual" colors={palette}></Gallery>
+        <Gallery
+          className="visual"
+          colors={palette}
+          gallery={gallery}
+        ></Gallery>
       ) : null}
 
       {showInfo ? (
@@ -435,7 +476,7 @@ export default function Dashboard({ code }) {
         >
           <IoColorPalette />
         </button>
-        {/* <button
+        <button
           className="button"
           data-tip="Gallery"
           data-place="right"
@@ -445,7 +486,7 @@ export default function Dashboard({ code }) {
           }}
         >
           <IoImages />
-        </button> */}
+        </button>
       </div>
       <div className="playback-bar">
         <div className="song-infos">
@@ -453,42 +494,44 @@ export default function Dashboard({ code }) {
             ? "🎵 " + currentSong.name + " - " + currentSong.artists[0].name
             : "..."}
         </div>
-        <button
-          className="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            previousSong();
-          }}
-        >
-          <IoPlayBack />
-        </button>
-        <button
-          className="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            togglePlayback();
-          }}
-        >
-          {playing ? <IoPause /> : <IoPlay />}
-        </button>
-        <button
-          className="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            nextSong();
-          }}
-        >
-          <IoPlayForward />
-        </button>
-        <button
-          className="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            addToLibrary();
-          }}
-        >
-          {songIsSaved ? <IoCheckmark /> : <IoAdd />}
-        </button>
+        <div className="playback-controls">
+          <button
+            className="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              previousSong();
+            }}
+          >
+            <IoPlayBack />
+          </button>
+          <button
+            className="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePlayback();
+            }}
+          >
+            {playing ? <IoPause /> : <IoPlay />}
+          </button>
+          <button
+            className="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              nextSong();
+            }}
+          >
+            <IoPlayForward />
+          </button>
+          <button
+            className="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              addToLibrary();
+            }}
+          >
+            {songIsSaved ? <IoCheckmark /> : <IoAdd />}
+          </button>
+        </div>
       </div>
     </div>
   );

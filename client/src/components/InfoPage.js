@@ -9,13 +9,13 @@ export default function InfoPage(props) {
           <p>A Spotify Player and Visualizer</p>
           <ul>
             <li>
-              💿 - Visual: the currently playing song is display at the center
-              of the screen, the suggestions move around the screen. Try click
+              💿 - Visual: the currently playing song is displayed at the center
+              of the screen, while the suggestions move around the screen. Try click
               them and let me guide your session to unexplored territories 🚀
             </li>
             <li>
               📈 - Mood Selector: registers where you've been during the
-              listening session. Try click on the place where you want to go 👾
+              listening session. Try click on the place where you want to go 🗺️
             </li>
             <li>
               🎨 - Style Transfer: artify yourself with the currently playing
