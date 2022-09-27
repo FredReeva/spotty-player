@@ -159,7 +159,7 @@ body,
   border: none;
   border-radius: 10em;
   color: white;
-  padding: 0.4em 2.5em;
+  padding: 0.4em 2em;
   text-align: center;
   text-decoration: none;
   box-shadow: 0 0 10px 2px #323232;
@@ -169,7 +169,7 @@ body,
 
 .login-button:hover {
   transition: 300ms;
-  padding: 0.5em 2.8em;
+  padding: 0.5em 2.2em;
   box-shadow: 0 0 10px 5px #414141;
   color: white;
 }
@@ -262,12 +262,24 @@ body,
   color: white;
   display: flex;
   flex-direction: column;
+
   border: none;
   height: 100%;
   width: 100%;
   font-size: 1.5rem;
   justify-content: center;
   align-items: center;
+}
+
+.blurred {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  filter: blur(10px);
+  transform: scale(1.1);
 }
 
 .p5canvas {
@@ -279,9 +291,11 @@ body,
   position: fixed;
   display: flex;
   flex-direction: column;
+
+  overflow: scroll;
   align-items: center;
-  top: 50%;
-  transform: translate(0, -50%);
+  top: 3em;
+  bottom: 6em;
 }
 
 h1 {

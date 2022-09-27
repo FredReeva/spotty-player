@@ -31,12 +31,14 @@ const AUTH_URL = `${authEndpoint}?client_id=${clientId}&response_type=${response
 export default function Login() {
   return (
     <div>
-      <GlobesVisual
-        className="visual"
-        song={""}
-        recommendations={""}
-        colors={[60, 250, 250]}
-      ></GlobesVisual>
+      <div className="blurred">
+        <GlobesVisual
+          className="visual"
+          song={""}
+          recommendations={""}
+          colors={[60, 250, 250]}
+        ></GlobesVisual>
+      </div>
 
       <a className="login-button" href={AUTH_URL}>
         LOG IN
