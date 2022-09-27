@@ -17,6 +17,9 @@ class MoodVisual extends React.Component {
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
+      if (mood_plane) {
+        mood_plane.updateDimensions();
+      }
     };
 
     p.preload = () => {
@@ -31,12 +34,13 @@ class MoodVisual extends React.Component {
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
+      p.windowResized();
       p.imageMode(p.CENTER);
       p.textFont(font);
       p.textSize(12);
-      mood_plane = new MoodPlane(p);
+      mood_plane = new MoodPlane(p, this.margin);
       if (this.props.history) {
-        mood_plane.initMoodPlane(this.props.history, this.margin);
+        mood_plane.initMoodPlane(this.props.history);
       }
     };
 

@@ -1,13 +1,23 @@
 import Song from "./SongObj";
 
 class MoodPlane {
-  constructor(p5_ctx) {
+  constructor(p5_ctx, margin) {
     this.p5_ctx = p5_ctx;
     this.songs = [];
     this.n_songs = 30;
     this.current_song = "";
-    this.size = 50;
+    this.size = this.p5_ctx.windowHeight / 15;
     this.alpha = 200;
+    this.margin = margin;
+  }
+
+  updateDimensions() {
+    this.size = this.p5_ctx.windowHeight / 15;
+    if (this.songs) {
+      this.songs.forEach((song) => {
+        song.updateSize(this.p5_ctx.windowHeight / 15);
+      });
+    }
   }
 
   initMoodPlane(past_songs, margin) {

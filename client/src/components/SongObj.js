@@ -5,10 +5,6 @@ class Song {
     this.shadow_color = [0, 0, 0];
     this.show_tooltip = false;
     this.mouse_hovering = false;
-    this.text = this.draw_context.createGraphics(
-      this.draw_context.windowWidth / 2,
-      this.draw_context.windowHeight / 2
-    );
     this.j = 0;
     this.i = 0;
     this.border_alpha = 50;
@@ -342,6 +338,30 @@ class Song {
       }
     }
   }
+
+  updateSize(size) {
+    this.size = size;
+  }
+
+  // computeValEnPosition(valence, energy, margin) {
+    
+  //     let x_pos = this.p5_ctx.map(
+  //       valence,
+  //       0,
+  //       1,
+  //       -this.p5_ctx.windowWidth / 2 +margin,
+  //       this.p5_ctx.windowWidth / 2-margin
+  //     );
+  //     let y_pos = this.p5_ctx.map(
+  //       energy,
+  //       0,
+  //       1,
+  //       this.p5_ctx.windowHeight / 2-margin,
+  //       -this.p5_ctx.windowHeight / 2+margin
+  //     );
+
+  //   return [x_pos, y_pos];
+  // }
 }
 
 export default Song;

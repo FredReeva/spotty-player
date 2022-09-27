@@ -20,10 +20,14 @@ class GlobesVisual extends React.Component {
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
+      if (world) {
+        world.updateDimensions();
+      }
     };
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
+      p.windowResized();
       p.textFont(font);
       p.textSize(12);
 
@@ -64,7 +68,9 @@ class GlobesVisual extends React.Component {
   }
 
   render() {
-    return <div ref={this.myRef}></div>;
+   
+      return <div ref={this.myRef}></div>;
+
   }
 }
 

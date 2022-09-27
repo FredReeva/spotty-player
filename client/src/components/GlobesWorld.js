@@ -5,7 +5,7 @@ class World {
     this.is_current_view = false;
     this.p5_ctx = p5_ctx;
     this.songs = [];
-    this.n_songs = 60;
+    this.n_songs = 80;
     this.history_songs = 10;
     this.current_song = "";
     this.main_size = (1.5 * this.p5_ctx.windowHeight) / 3;
@@ -16,6 +16,22 @@ class World {
       new Song(true, this.p5_ctx, this.center_pos, this.main_size)
     );
     this.spawnWorld();
+  }
+
+  updateDimensions() {
+    this.main_size = (1.5 * this.p5_ctx.windowHeight) / 3;
+    this.sizes = [this.main_size / 3, this.main_size / 2.5];
+    if (this.songs) {
+      this.songs.forEach((song_circle, index) => {
+        if (index === 0) {
+          song_circle.updateSize(this.main_size);
+        } else if (index <= this.history_songs) {
+          song_circle.updateSize(this.sizes[0]);
+        } else {
+          song_circle.updateSize(this.sizes[1]);
+        }
+      });
+    }
   }
 
   spawnWorld() {

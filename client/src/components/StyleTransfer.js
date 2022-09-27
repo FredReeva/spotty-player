@@ -226,130 +226,134 @@ export default function StyleTransfer(props) {
     return ctx.getImageData(0, 0, videoSettings.width, videoSettings.height);
   }
 
-  return (
-    <div
-      className="visual"
-      style={{
-        backgroundColor: `rgb(${props.colors[0]})`,
-      }}
-    >
-      <input
-        style={{ display: "none" }}
-        ref={inputRef}
-        type="file"
-        onChange={changeImage}
-      />
-
-      {resultImg ? (
-        <img
-          id="result"
-          alt=""
-          className="result-image"
-          src={resultImg}
-          style={{
-            borderColor: `rgb(${props.colors[2]})`,
-          }}
+    return (
+      <div
+        className="visual"
+        style={{
+          backgroundColor: `rgb(${props.colors[0]})`,
+        }}
+      >
+        <input
+          style={{ display: "none" }}
+          ref={inputRef}
+          type="file"
+          onChange={changeImage}
         />
-      ) : null}
 
-      {image ? (
-        <img
-          id="image-content"
-          alt=""
-          className="upload-image"
-          style={{
-            borderColor: `rgb(${props.colors[1]})`,
-          }}
-          src={URL.createObjectURL(image)}
-        />
-      ) : null}
+        {resultImg ? (
+          <img
+            id="result"
+            alt=""
+            className="result-image"
+            src={resultImg}
+            style={{
+              borderColor: `rgb(${props.colors[2]})`,
+            }}
+          />
+        ) : null}
 
-      {props.imageUrl ? (
-        <img
-          id="image-style"
-          alt=""
-          className="style-image"
-          crossOrigin="anonymous"
-          style={{
-            borderColor: `rgb(${props.colors[1]})`,
-          }}
-          src={props.imageUrl}
-        />
-      ) : null}
+        {image ? (
+          <img
+            id="image-content"
+            alt=""
+            className="upload-image"
+            style={{
+              borderColor: `rgb(${props.colors[1]})`,
+            }}
+            src={URL.createObjectURL(image)}
+          />
+        ) : null}
 
-      {webcam ? (
-        <video
-          id="webcam"
-          ref={videoRef}
-          className="video-player"
-          style={{
-            borderColor: `rgb(${props.colors[1]})`,
-          }}
-          onClick={() => {
-            takePicture();
-          }}
-        />
-      ) : null}
-
-      <div className="styletrans-bar">
-        <ReactTooltip />
-        {/* <button
-          className="button"
-          data-tip="Image"
-          data-place="top"
-          style={{
-            borderRadius: "10em",
-            padding: "0.8em",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            changeImage();
-          }}
-        >
-          {!image ? <IoImage /> : <IoRemoveCircle />}
-        </button> */}
-        <button
-          className="button"
-          data-tip="Webcam"
-          data-place="bottom"
-          style={{
-            borderRadius: "10em",
-            padding: "0.8em",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            toggleWebcam();
-          }}
-        >
-          {!webcam ? <IoVideocam /> : <IoVideocamOff />}
-        </button>
+        {props.imageUrl ? (
+          <img
+            id="image-style"
+            alt=""
+            className="style-image"
+            crossOrigin="anonymous"
+            style={{
+              borderColor: `rgb(${props.colors[1]})`,
+            }}
+            src={props.imageUrl}
+          />
+        ) : null}
 
         {webcam ? (
-          <button
+          <video
+            id="webcam"
+            ref={videoRef}
+            className="video-player"
+            style={{
+              borderColor: `rgb(${props.colors[1]})`,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              takePicture();
+            }}
+          />
+        ) : null}
+
+        <div className="styletrans-bar">
+          <ReactTooltip />
+          {/* <button
             className="button"
-            data-tip="Style Transfer"
-            data-place="bottom"
+            data-tip="Image"
+            data-place="top"
             style={{
               borderRadius: "10em",
               padding: "0.8em",
               cursor: "pointer",
             }}
             onClick={() => {
-              styleButtonPressed();
+              changeImage();
             }}
           >
-            <IoSparkles />
-          </button>
-        ) : (
+            {!image ? <IoImage /> : <IoRemoveCircle />}
+          </button> */}
           <button
-            className="button inactive"
-            data-tip="Style Transfer"
+            className="button"
+            data-tip="Webcam"
             data-place="bottom"
+            style={{
+              borderRadius: "10em",
+              padding: "0.8em",
+              cursor: "pointer",
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWebcam();
+            }}
           >
-            <IoSparkles />
+            {!webcam ? <IoVideocam /> : <IoVideocamOff />}
           </button>
-        )}
+
+          {webcam ? (
+            <button
+              className="button"
+              data-tip="Style Transfer"
+              data-place="bottom"
+              style={{
+                borderRadius: "10em",
+                padding: "0.8em",
+                cursor: "pointer",
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                styleButtonPressed();
+              }}
+            >
+              <IoSparkles />
+            </button>
+          ) : (
+            <button
+              className="button inactive"
+              data-tip="Style Transfer"
+              data-place="bottom"
+            >
+              <IoSparkles />
+            </button>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+
 }
