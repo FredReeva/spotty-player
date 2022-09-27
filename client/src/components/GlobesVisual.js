@@ -1,16 +1,22 @@
 import React from "react";
 import p5 from "p5";
-import World from "./World";
+import World from "./GlobesWorld";
 
-class Visual extends React.Component {
+class GlobesVisual extends React.Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
     this.selected_song = "";
   }
 
+  // p5 sketch
   Sketch = (p) => {
     var world;
+    var font;
+
+    p.preload = () => {
+      font = p.loadFont("assets/SourceSansPro-Black.ttf");
+    };
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
@@ -18,6 +24,8 @@ class Visual extends React.Component {
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
+      p.textFont(font);
+      p.textSize(12);
 
       world = new World(p);
     };
@@ -39,15 +47,18 @@ class Visual extends React.Component {
       }
     };
 
+    // dragging objects (disabled)
     // p.mouseDragged = () => {
     //   world.getMouseDragged();
     // };
   };
 
+  // create sketch when coimponent mounts
   componentDidMount() {
     this.myP5 = new p5(this.Sketch, this.myRef.current);
   }
 
+  // delete sketch when component unmounts
   componentWillUnmount() {
     this.myP5.remove();
   }
@@ -57,4 +68,4 @@ class Visual extends React.Component {
   }
 }
 
-export default Visual;
+export default GlobesVisual;

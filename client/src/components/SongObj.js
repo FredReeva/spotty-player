@@ -11,7 +11,7 @@ class Song {
     );
     this.j = 0;
     this.i = 0;
-    this.border_alpha = 10;
+    this.border_alpha = 50;
     this.is_history = false;
     this.border = 5;
     this.pos = position;
@@ -51,13 +51,13 @@ class Song {
   moveSong() {
     this.applyForce(this.force);
 
-    //if (this.acc.mag() < 0.01) this.acc.setMag(0);
     this.acc.limit(0.8);
     this.vel.add(this.acc);
-    //if (this.vel.mag() < 0.001) this.vel.setMag(0);
+
     this.vel.limit(0.5);
     this.pos.add(this.vel);
 
+    // wrap or limit borders
     //this.limitBorders();
     this.wrapBorders();
 
@@ -66,7 +66,7 @@ class Song {
   }
 
   drawSong() {
-    this.setShadow();
+    //this.setShadow();
 
     this.draw_context.fill(
       this.shadow_color[0],
@@ -86,6 +86,11 @@ class Song {
     } else {
       this.draw_context.tint(255);
     }
+
+    if (this.show_tooltip) {
+      this.draw_context.tint(100, 255);
+    }
+
     this.draw_context.ellipse(
       this.pos.x,
       this.pos.y,
@@ -93,6 +98,30 @@ class Song {
       this.size - this.border,
       40
     );
+
+    if (this.show_tooltip && this.song_infos) {
+      if (this.is_history) {
+        this.draw_context.fill(150);
+      } else {
+        this.draw_context.fill(255);
+      }
+      let text_width_name = this.draw_context.textWidth(this.song_infos.name);
+      let text_width_artist = this.draw_context.textWidth(
+        this.song_infos.artists[0].name
+      );
+
+      //this.draw_context.fill(255);
+      this.draw_context.translate(-text_width_name / 2, 0, 1);
+      this.draw_context.text(this.song_infos.name, this.pos.x, this.pos.y);
+      this.draw_context.translate(text_width_name / 2, 0);
+      this.draw_context.translate(-text_width_artist / 2, 0);
+      this.draw_context.text(
+        this.song_infos.artists[0].name,
+        this.pos.x,
+        this.pos.y + 15
+      );
+      this.draw_context.translate(text_width_artist / 2, 0, -1);
+    }
   }
 
   wrapBorders() {
@@ -118,45 +147,49 @@ class Song {
     }
   }
 
-  // limitBorders() {
-  //   let border_top = -this.draw_context.windowHeight / 2;
-  //   let border_bottom = this.draw_context.windowHeight / 2;
-  //   if (this.pos.y < border_top) {
-  //     this.pos.y = border_top;
-  //   }
-  //   if (this.pos.y > border_bottom) {
-  //     this.pos.y = border_bottom;
-  //   }
-  // }
+  limitBorders() {
+    let border_top = -this.draw_context.windowHeight / 2;
+    let border_bottom = this.draw_context.windowHeight / 2;
+    if (this.pos.y < border_top) {
+      this.pos.y = border_top;
+    }
+    if (this.pos.y > border_bottom) {
+      this.pos.y = border_bottom;
+    }
+  }
 
   computeInteraction(other) {
+    // repulsion force ?
     //this.repulsionForce(other);
 
     if (this.checkIntersection(other.pos, other.size)) {
       let obj_pos = this.pos.copy();
       let distance_vec = obj_pos.sub(other.pos);
 
+      // collision check
       if (!this.is_currently_playing) this.computeCorrectPosition(other);
       this.vel.reflect(distance_vec);
       other.vel.reflect(distance_vec);
 
+      // collision friction?
       //this.applyCollisionFriction();
     }
   }
 
-  // repulsionForce(other) {
-  //   let other_pos = other.pos.copy();
-  //   let obj_pos = this.pos.copy();
-  //   let repulsion_vector = other_pos.sub(obj_pos);
-  //   let dist = repulsion_vector.mag();
-  //   dist = dist - (other.size / 2 + this.size / 2);
-  //   repulsion_vector.normalize();
-  //   let mag = -1 / (Math.pow(dist, 2) + 1e-9);
-  //   let repulsion_force = repulsion_vector.setMag(mag);
-  //   this.force.add(repulsion_force);
-  // }
+  repulsionForce(other) {
+    let other_pos = other.pos.copy();
+    let obj_pos = this.pos.copy();
+    let repulsion_vector = other_pos.sub(obj_pos);
+    let dist = repulsion_vector.mag();
+    dist = dist - (other.size / 2 + this.size / 2);
+    repulsion_vector.normalize();
+    let mag = -1 / (Math.pow(dist, 2) + 1e-9);
+    let repulsion_force = repulsion_vector.setMag(mag);
+    this.force.add(repulsion_force);
+  }
 
   applyDriftingVelocity(energy) {
+    // noise-generated wind
     let wind_direction = this.draw_context.noise(this.i) * 4 * Math.PI;
 
     let wind = this.draw_context.constructor.Vector.fromAngle(wind_direction);
@@ -170,6 +203,7 @@ class Song {
   }
 
   gravitationalForce(attractor_mass) {
+    // gravitational force wrt central song
     let center_gravity = attractor_mass.pos.copy();
     let grav_vector = center_gravity.sub(this.pos);
     let dist = grav_vector.mag() - (attractor_mass.size / 2 + this.size / 2);
@@ -179,6 +213,7 @@ class Song {
   }
 
   applyFriction() {
+    // friction
     let friction = this.vel.copy();
     friction.normalize();
     friction.mult(-1);
@@ -188,6 +223,7 @@ class Song {
   }
 
   computeCorrectPosition(other) {
+    // check and fix tunelling problems
     let collision_weight = other.size / (other.size + this.size);
 
     let collision_point = this.draw_context.constructor.Vector.lerp(
@@ -207,6 +243,7 @@ class Song {
   }
 
   applyCollisionFriction() {
+    // collision friction
     let friction = this.vel.copy();
     friction.normalize();
     friction.mult(-1);
@@ -215,6 +252,7 @@ class Song {
   }
 
   checkIntersection(vector, diameter) {
+    // utils for checking circle intersections
     let dist = this.pos.dist(vector);
 
     return dist <= this.size / 2 + diameter / 2;
@@ -246,6 +284,7 @@ class Song {
   // }
 
   songClicked() {
+    // return true if clicked song
     if (this.dragging == false) {
       let mouse_pos_orig = this.draw_context.createVector(
         this.draw_context.mouseX - this.draw_context.windowWidth / 2,
@@ -255,6 +294,7 @@ class Song {
       return this.checkIntersection(mouse_pos_orig, 0);
     }
   }
+
   songDragged() {
     let mouse_pos_orig = this.draw_context.createVector(
       this.draw_context.mouseX - this.draw_context.windowWidth / 2,
@@ -278,21 +318,13 @@ class Song {
   //   }
   // }
 
-  mouseOver(color) {
-    this.shadow_color = color;
+  mouseOver() {
+    //this.shadow_color = color;
     let mouse_pos_orig = this.draw_context.createVector(
       this.draw_context.mouseX - this.draw_context.windowWidth / 2,
       this.draw_context.mouseY - this.draw_context.windowHeight / 2
     );
-
-    if (this.checkIntersection(mouse_pos_orig, 0)) {
-      this.mouse_hovering = true;
-      this.show_tooltip = true;
-    } else {
-      this.mouse_hovering = false;
-
-      this.show_tooltip = false;
-    }
+    this.show_tooltip = this.checkIntersection(mouse_pos_orig, 0);
   }
 
   setShadow() {
@@ -303,7 +335,7 @@ class Song {
         this.border_alpha = 200;
       }
     } else {
-      if (this.border_alpha > 100) {
+      if (this.border_alpha > 50) {
         this.border_alpha -= 10;
       } else {
         this.border_alpha = 100;

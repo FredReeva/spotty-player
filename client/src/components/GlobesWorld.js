@@ -5,12 +5,13 @@ class World {
     this.is_current_view = false;
     this.p5_ctx = p5_ctx;
     this.songs = [];
-    this.n_songs = 80;
+    this.n_songs = 60;
     this.history_songs = 10;
     this.current_song = "";
     this.main_size = (1.5 * this.p5_ctx.windowHeight) / 3;
     this.sizes = [this.main_size / 3, this.main_size / 2.5];
     this.center_pos = this.p5_ctx.createVector(0, 0);
+    this.hovering_song = [];
     this.songs.push(
       new Song(true, this.p5_ctx, this.center_pos, this.main_size)
     );
@@ -45,8 +46,11 @@ class World {
       colors &&
       recommendations
     ) {
+      // detect hovering
       this.songs.forEach((song_circle, index) => {
-        //song_circle.mouseOver(colors[2]);
+        if (index !== 0) {
+          song_circle.mouseOver();
+        }
       });
 
       if (this.current_song !== playing.id) {
@@ -67,10 +71,6 @@ class World {
             song_circle.getSong(recommendations[index]);
           }
 
-          // else if (index <= this.queue_songs && queue !== []) {
-          //   song_circle.getSong(queue[index]);
-          // }
-
           this.songs[index].loadImage();
         });
 
@@ -83,9 +83,11 @@ class World {
         song_circle.gravitationalForce(this.songs[0]);
         //song_circle.applyFriction();
         song_circle.applyForce();
+
         if (playing) {
           song_circle.applyDriftingVelocity(playing.energy);
         }
+
         song_circle.moveSong();
       }
       for (let i = this.songs.length - 1; i >= 0; i--) {
@@ -111,12 +113,6 @@ class World {
       }
     }
   }
-
-  // getMouseReleased() {
-  //   for (let i = 1; i < this.n_songs; i++) {
-  //     this.songs[i].songReleased();
-  //   }
-  // }
 }
 
 export default World;

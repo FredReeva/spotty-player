@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import useAuth from "./useAuth";
 import SpotifyWebApi from "spotify-web-api-node";
 import ColorThief from "colorthief";
-import Visual from "./components/Visual";
-import History from "./components/History";
+import GlobesVisual from "./components/GlobesVisual";
+import MoodVisual from "./components/MoodVisual";
 import StyleTransfer from "./components/StyleTransfer";
 // import { FullScreen, useFullScreenHandle } from "react-full-screen";
 // import SpotifyPlayer from "react-spotify-web-playback";
@@ -13,8 +13,6 @@ import {
   IoPlay,
   IoPlayForward,
   IoPlayBack,
-  IoAdd,
-  IoCheckmark,
   IoColorPalette,
   IoAnalytics,
   IoPause,
@@ -94,10 +92,12 @@ export default function Dashboard({ code }) {
         spotifyApi
           .getMyCurrentPlaybackState()
           .then((res) => {
-            if (res.body && res.body.item.id) {
-              setPlaying(res.body.is_playing);
-              setCurrentSongId(res.body.item.id);
-              setErrorMsg("");
+            if (res) {
+              if (res.body && res.body.item.id) {
+                setPlaying(res.body.is_playing);
+                setCurrentSongId(res.body.item.id);
+                setErrorMsg("");
+              }
             }
           })
           .catch((err) => {
@@ -138,10 +138,10 @@ export default function Dashboard({ code }) {
     //   }
     // };
 
-    // get recommendations based on currently playing
     if (isSubscribed) {
       setErrorMsg("Getting recommendations...");
 
+      // get recommendations based on currently playing
       spotifyApi
         .getRecommendations({
           seed_tracks: [currentSongId],
@@ -158,6 +158,7 @@ export default function Dashboard({ code }) {
           setErrorMsg("Can't get recommendations!");
         });
 
+      // get song infos + album image url + valence-arousal
       spotifyApi
         .getMyCurrentPlayingTrack()
         .then((res) => {
@@ -186,19 +187,14 @@ export default function Dashboard({ code }) {
           console.log("something went wrong when getting album url");
         });
 
+      // check if song is saved in your library
       spotifyApi
         .containsMySavedTracks([currentSongId])
         .then((res) => {
           if (res) {
-            // An array is returned, where the first element corresponds to the first track ID in the query
             var trackIsInYourMusic = res.body[0];
-
             if (isSubscribed) {
-              if (trackIsInYourMusic) {
-                setSongIsSaved(true);
-              } else {
-                setSongIsSaved(false);
-              }
+              setSongIsSaved(trackIsInYourMusic);
             }
           }
         })
@@ -206,10 +202,7 @@ export default function Dashboard({ code }) {
           console.log("can't tell if the song is already in your library");
         });
 
-      // getQueue().catch((err) => {
-      //   console.log("error getting queue");
-      // });
-
+      // update history with current song
       if (currentSong) {
         setHistory([...history, currentSong]);
       }
@@ -218,6 +211,7 @@ export default function Dashboard({ code }) {
     return () => (isSubscribed = false);
   }, [currentSongId]);
 
+  // get palette when album image changes
   useEffect(() => {
     if (!imgUrl) return;
     const image = new Image();
@@ -229,49 +223,56 @@ export default function Dashboard({ code }) {
     image.crossOrigin = "Anonymous";
   }, [imgUrl]);
 
+  // start playing recommendations
   useEffect(() => {
     let isSubscribed = true;
     if (!selectedSong) return;
 
+    console.log("selected song");
     if (isSubscribed) {
+      // get recommendations based on selected song
       setErrorMsg("Getting recommendations...");
       spotifyApi
         .getRecommendations({
           seed_tracks: [selectedSong],
-          limit: 20,
+          limit: 50,
         })
         .then((res) => {
           if (res) {
-            setQueue(res.body.tracks);
+            setRecommendations(res.body.tracks);
             setErrorMsg("");
+
+            const selected_recommendations = res.body.tracks;
+
+            const playback_queue = selected_recommendations
+              .filter((song) => song.id !== selectedSong)
+              .map((song) => {
+                return "spotify:track:" + song.id;
+              });
+
+            playback_queue.splice(0, 0, "spotify:track:" + selectedSong);
+
+            spotifyApi
+              .play({
+                uris: playback_queue,
+              })
+              .then(() => {
+                setErrorMsg("");
+              })
+              .catch((err) => {
+                setErrorMsg("Can't change song. Are you a premium user?");
+              });
           }
         })
         .catch((err) => {
           setErrorMsg("Can't get recommendations!");
-        });
-
-      let playback_queue = queue
-        .filter((song) => song.id !== selectedSong)
-        .map((song) => "spotify:track:" + song.id);
-
-      playback_queue.splice(0, 0, "spotify:track:" + selectedSong);
-
-      spotifyApi
-        .play({
-          uris: playback_queue,
-        })
-        .then(() => {
-          setErrorMsg("");
-        })
-
-        .catch((err) => {
-          setErrorMsg("Can't change song. Are you a premium user?");
         });
     }
 
     return () => (isSubscribed = false);
   }, [selectedSong]);
 
+  // get infos about currently playing track when computing style transfer
   async function setCorrectGallery(src) {
     spotifyApi
       .getMyCurrentPlayingTrack()
@@ -295,6 +296,7 @@ export default function Dashboard({ code }) {
       });
   }
 
+  // get suggestions based on clicked point in mood selector plane
   const suggestSongsPlane = (coordinates) => {
     if (!accessToken) return;
     if (!currentSongId) return;
@@ -317,6 +319,7 @@ export default function Dashboard({ code }) {
       });
   };
 
+  // play/pause button
   const togglePlayback = () => {
     if (!playing) {
       spotifyApi
@@ -344,12 +347,7 @@ export default function Dashboard({ code }) {
     }
   };
 
-  // useEffect(() => {
-  //   getQueue().catch(() => {
-  //     console.log("error while getting the queue");
-  //   });
-  // }, []);
-
+  // skip to next song in queue
   const previousSong = () => {
     spotifyApi
       .skipToPrevious()
@@ -363,6 +361,7 @@ export default function Dashboard({ code }) {
       });
   };
 
+  // skip to previous song
   const nextSong = () => {
     spotifyApi
       .skipToNext()
@@ -376,6 +375,7 @@ export default function Dashboard({ code }) {
       });
   };
 
+  // add song to your library
   const addToLibrary = () => {
     spotifyApi
       .addToMySavedTracks([currentSongId])
@@ -390,6 +390,7 @@ export default function Dashboard({ code }) {
       });
   };
 
+  // page structure
   return (
     <div
       className="container"
@@ -398,17 +399,17 @@ export default function Dashboard({ code }) {
       }}
     >
       {menuSelection === "mood" ? (
-        <History
+        <MoodVisual
           className="visual"
           song={currentSong}
           history={history}
           colors={palette}
           setSelHistSong={suggestSongsPlane}
-        ></History>
+        ></MoodVisual>
       ) : null}
 
       {menuSelection === "main" ? (
-        <Visual
+        <GlobesVisual
           className="visual"
           song={currentSong}
           queue={queue}
@@ -416,8 +417,10 @@ export default function Dashboard({ code }) {
           recommendations={recommendations}
           colors={palette}
           playbackState={playing}
-          setSelSong={setSelectedSong}
-        ></Visual>
+          setSelSong={(e) => {
+            setSelectedSong(e);
+          }}
+        ></GlobesVisual>
       ) : null}
 
       {menuSelection === "style" ? (

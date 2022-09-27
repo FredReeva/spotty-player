@@ -1,5 +1,5 @@
 import React from "react";
-import Visual from "./components/Visual";
+import GlobesVisual from "./components/GlobesVisual";
 import credentials from "./credentials.json";
 
 export const authEndpoint = "https://accounts.spotify.com/authorize";
@@ -32,12 +32,12 @@ export default function Login() {
   return (
     <div className="container">
       <div className="blurred-panel">
-        <Visual
+        <GlobesVisual
           className="visual"
           song={""}
           recommendations={""}
           colors={[60, 250, 250]}
-        ></Visual>
+        ></GlobesVisual>
       </div>
       <a className="login-button" href={AUTH_URL}>
         LOG IN

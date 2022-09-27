@@ -1,16 +1,16 @@
 import Song from "./SongObj";
 
-class Timeline {
+class MoodPlane {
   constructor(p5_ctx) {
     this.p5_ctx = p5_ctx;
     this.songs = [];
     this.n_songs = 30;
     this.current_song = "";
-    this.size = 80;
+    this.size = 50;
     this.alpha = 200;
   }
 
-  initTimeline(past_songs, margin) {
+  initMoodPlane(past_songs, margin) {
     past_songs.forEach((old_song) => {
       let valence = this.p5_ctx.map(
         old_song.valence,
@@ -35,13 +35,7 @@ class Timeline {
     });
   }
 
-  // resizeCanvas(playing, past_songs, colors)
-  // {
-  //   this.initTimeline(past_songs)
-  //   this.drawTimeline(playing, colors)
-  // }
-
-  drawTimeline(playing, colors, img_emoji) {
+  drawMoodPlane(playing, colors, img_emoji) {
     this.p5_ctx.background(colors[0]);
 
     this.drawArrows(colors, img_emoji);
@@ -57,9 +51,9 @@ class Timeline {
     //this.decreaseAlpha();
 
     if (this.p5_ctx.frameCount % 20 === 0 && playing && colors) {
-      // this.songs.forEach((song_circle, index) => {
-      //   song_circle.mouseOver(colors[2]);
-      // });
+      this.songs.forEach((song_circle, index) => {
+        song_circle.mouseOver();
+      });
 
       if (this.current_song !== playing.id) {
         let valence = this.p5_ctx.map(
@@ -93,6 +87,7 @@ class Timeline {
       this.p5_ctx.strokeWeight(5);
       this.p5_ctx.fill(line_color);
 
+      // line between songs
       // if (i != this.songs.length - 1) {
       //   this.songs[i].size = this.size;
       //   this.p5_ctx.line(
@@ -127,7 +122,6 @@ class Timeline {
     this.p5_ctx.fill(arrow_color);
 
     // vertical arrow
-
     let size_inv_x = 3;
     let size_inv_y = 3.5;
     let y_offset = -30;
@@ -213,4 +207,4 @@ class Timeline {
   // }
 }
 
-export default Timeline;
+export default MoodPlane;

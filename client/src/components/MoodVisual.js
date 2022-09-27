@@ -1,8 +1,8 @@
 import React from "react";
 import p5 from "p5";
-import Timeline from "./Timeline";
+import MoodPlane from "./MoodPlane";
 
-class History extends React.Component {
+class MoodVisual extends React.Component {
   constructor(props) {
     super(props);
     this.myRef = React.createRef();
@@ -11,8 +11,9 @@ class History extends React.Component {
   }
 
   Sketch = (p) => {
-    var timeline;
+    var mood_plane;
     var img_emoji;
+    var font;
 
     p.windowResized = () => {
       p.resizeCanvas(p.windowWidth, p.windowHeight);
@@ -23,6 +24,7 @@ class History extends React.Component {
       let sad = p.loadImage("assets/sad.png");
       let energy = p.loadImage("assets/energy.png");
       let calm = p.loadImage("assets/zzz.png");
+      font = p.loadFont("assets/SourceSansPro-Black.ttf");
 
       img_emoji = [happy, energy, sad, calm];
     };
@@ -30,16 +32,18 @@ class History extends React.Component {
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
       p.imageMode(p.CENTER);
-      timeline = new Timeline(p);
+      p.textFont(font);
+      p.textSize(12);
+      mood_plane = new MoodPlane(p);
       if (this.props.history) {
-        timeline.initTimeline(this.props.history, this.margin);
+        mood_plane.initMoodPlane(this.props.history, this.margin);
       }
     };
 
     p.draw = () => {
       p.frameRate(60);
 
-      timeline.drawTimeline(this.props.song, this.props.colors, img_emoji);
+      mood_plane.drawMoodPlane(this.props.song, this.props.colors, img_emoji);
     };
 
     p.mouseClicked = () => {
@@ -88,4 +92,4 @@ class History extends React.Component {
   }
 }
 
-export default History;
+export default MoodVisual;
