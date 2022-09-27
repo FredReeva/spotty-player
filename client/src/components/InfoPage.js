@@ -34,6 +34,7 @@ export default function InfoPage(props) {
             </li>
           </ul>
         </div>
+        <p className="pulsate">...click anywhere to continue...</p>
       </div>
       <div className="bottom-infos">version 1.0 - September 2022</div>
     </div>

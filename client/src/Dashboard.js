@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import useAuth from "./useAuth";
 import SpotifyWebApi from "spotify-web-api-node";
 import ColorThief from "colorthief";
 import GlobesVisual from "./components/GlobesVisual";
 import MoodVisual from "./components/MoodVisual";
 import StyleTransfer from "./components/StyleTransfer";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 // import { FullScreen, useFullScreenHandle } from "react-full-screen";
 // import SpotifyPlayer from "react-spotify-web-playback";
 import ReactTooltip from "react-tooltip";
@@ -46,6 +45,8 @@ export default function Dashboard({ code }) {
   const [playing, setPlaying] = useState(false);
   const [showInfo, setShowInfo] = useState(true);
   const [gallery, setGallery] = useState([]);
+
+  const [size, setSize] = useState(null);
   const [palette, setPalette] = useState([
     [255, 255, 255],
     [0, 0, 0],
@@ -62,12 +63,6 @@ export default function Dashboard({ code }) {
     // const img = imgRef.current;
     setPalette(colorThief.getPalette(img, 6));
   };
-
-  useEffect(() => {
-    setTimeout(() => {
-      setShowInfo(false);
-    }, 7000);
-  }, []);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -153,54 +148,58 @@ export default function Dashboard({ code }) {
             setRecommendations(res.body.tracks);
 
             setErrorMsg("");
+
+            // get song infos + album image url + valence-arousal
+            spotifyApi
+              .getMyCurrentPlayingTrack()
+              .then((res) => {
+                if (res && res.body.item) {
+                  let song_infos = res.body.item;
+
+                  spotifyApi
+                    .getAudioFeaturesForTrack(currentSongId)
+                    .then((res) => {
+                      if (res) {
+                        song_infos["valence"] = res.body.valence;
+                        song_infos["energy"] = res.body.energy;
+
+                        setCurrentSong(song_infos);
+                        setGallery([...gallery]);
+                      }
+                    })
+                    .catch((err) => {
+                      console.log(
+                        "something went wrong when getting track features"
+                      );
+                    });
+
+                  setImgUrl(res.body.item.album.images[1].url);
+                }
+              })
+              .catch((err) => {
+                console.log("something went wrong when getting album url");
+              });
+
+            // check if song is saved in your library
+            spotifyApi
+              .containsMySavedTracks([currentSongId])
+              .then((res) => {
+                if (res) {
+                  var trackIsInYourMusic = res.body[0];
+                  if (isSubscribed) {
+                    setSongIsSaved(trackIsInYourMusic);
+                  }
+                }
+              })
+              .catch((err) => {
+                console.log(
+                  "can't tell if the song is already in your library"
+                );
+              });
           }
         })
         .catch((err) => {
           setErrorMsg("Can't get recommendations!");
-        });
-
-      // get song infos + album image url + valence-arousal
-      spotifyApi
-        .getMyCurrentPlayingTrack()
-        .then((res) => {
-          if (res && res.body.item) {
-            let song_infos = res.body.item;
-
-            spotifyApi
-              .getAudioFeaturesForTrack(currentSongId)
-              .then((res) => {
-                if (res) {
-                  song_infos["valence"] = res.body.valence;
-                  song_infos["energy"] = res.body.energy;
-
-                  setCurrentSong(song_infos);
-                  setGallery([...gallery]);
-                }
-              })
-              .catch((err) => {
-                console.log("something went wrong when getting track features");
-              });
-
-            setImgUrl(res.body.item.album.images[1].url);
-          }
-        })
-        .catch((err) => {
-          console.log("something went wrong when getting album url");
-        });
-
-      // check if song is saved in your library
-      spotifyApi
-        .containsMySavedTracks([currentSongId])
-        .then((res) => {
-          if (res) {
-            var trackIsInYourMusic = res.body[0];
-            if (isSubscribed) {
-              setSongIsSaved(trackIsInYourMusic);
-            }
-          }
-        })
-        .catch((err) => {
-          console.log("can't tell if the song is already in your library");
         });
 
       // update history with current song
@@ -391,195 +390,199 @@ export default function Dashboard({ code }) {
       });
   };
 
+  useLayoutEffect(() => {
+    function updateSize() {
+      setSize([window.innerWidth, window.innerHeight]);
+    }
+    window.addEventListener("resize", updateSize);
+    updateSize();
+
+    return () => window.removeEventListener("resize", updateSize);
+  }, [menuSelection]);
+
   // page structure
   return (
-    <BrowserRouter>
-      <div
-        style={{
-          backgroundColor: `rgb(${palette[0]})`,
-        }}
-      >
-        <Routes>
-          <Route
-            index
-            element={
-              <GlobesVisual
-                className="visual"
-                song={currentSong}
-                queue={queue}
-                history={history}
-                recommendations={recommendations}
-                colors={palette}
-                playbackState={playing}
-                mode={menuSelection}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                setSelSong={(e) => {
-                  setSelectedSong(e);
-                }}
-              ></GlobesVisual>
-            }
-          />
+    <div
+      style={{
+        backgroundColor: `rgb(${palette[0]})`,
+      }}
+    >
+      {menuSelection === "mood" && (
+        <MoodVisual
+          id="mood"
+          className="visual"
+          song={currentSong}
+          history={history}
+          colors={palette}
+          size={size}
+          setSelHistSong={suggestSongsPlane}
+        ></MoodVisual>
+      )}
 
-          <Route
-            path="/mood"
-            element={
-              <MoodVisual
-                className="visual"
-                song={currentSong}
-                history={history}
-                colors={palette}
-                setSelHistSong={suggestSongsPlane}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                mode={menuSelection}
-              ></MoodVisual>
-            }
-          />
+      {menuSelection === "main" && (
+        <GlobesVisual
+          className="visual"
+          song={currentSong}
+          queue={queue}
+          history={history}
+          recommendations={recommendations}
+          colors={palette}
+          mode={menuSelection}
+          size={size}
+          playbackState={playing}
+          setSelSong={(e) => {
+            setSelectedSong(e);
+          }}
+        ></GlobesVisual>
+      )}
 
-          <Route
-            path="/style"
-            element={
-              <StyleTransfer
-                className="visual"
-                song={currentSongId}
-                colors={palette}
-                imageUrl={imgUrl}
-                setErrorMsg={setErrorMsg}
-                mode={menuSelection}
-                setGallery={(src) => setCorrectGallery(src)}
-              ></StyleTransfer>
-            }
-          />
+      {menuSelection === "style" && (
+        <StyleTransfer
+          className="visual"
+          song={currentSongId}
+          colors={palette}
+          imageUrl={imgUrl}
+          mode={menuSelection}
+          setErrorMsg={setErrorMsg}
+          setGallery={(src) => setCorrectGallery(src)}
+        ></StyleTransfer>
+      )}
+      {menuSelection === "gallery" && (
+        <Gallery
+          className="visual"
+          colors={palette}
+          gallery={gallery}
+        ></Gallery>
+      )}
 
-          <Route
-            path="/gallery"
-            element={
-              <Gallery
-                className="visual"
-                colors={palette}
-                gallery={gallery}
-                mode={menuSelection}
-              ></Gallery>
-            }
-          />
-        </Routes>
+      {showInfo && (
+        <InfoPage
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowInfo(!showInfo);
+          }}
+        ></InfoPage>
+      )}
 
-        {showInfo ? (
-          <InfoPage
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowInfo(!showInfo);
-            }}
-          ></InfoPage>
-        ) : null}
+      <ReactTooltip />
+      <div className="footer-bar">
+        {errorMsg}
 
-        <ReactTooltip />
-        <div className="footer-bar">
-          {errorMsg}
+        <button
+          className="button"
+          data-tip="Info"
+          data-place="left"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowInfo(!showInfo);
+          }}
+        >
+          <IoInformationCircle />
+        </button>
+      </div>
 
+      <div className="menu-bar">
+        <button
+          className="button"
+          data-tip="Globes"
+          data-place="right"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuSelection("main");
+          }}
+        >
+          <IoDisc />
+        </button>
+
+        <button
+          className="button"
+          data-tip="Mood Selector"
+          data-place="right"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuSelection("mood");
+          }}
+        >
+          <IoAnalytics />
+        </button>
+        <button
+          className="button"
+          data-tip="Style Transfer"
+          data-place="right"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuSelection("style");
+          }}
+        >
+          <IoColorPalette />
+        </button>
+        {gallery.length > 0 ? (
           <button
             className="button"
-            data-tip="Info"
-            data-place="left"
+            data-tip="Gallery"
+            data-place="right"
             onClick={(e) => {
               e.stopPropagation();
-              setShowInfo(!showInfo);
+              setMenuSelection("gallery");
             }}
           >
-            <IoInformationCircle />
+            <IoImages />
+          </button>
+        ) : (
+          <button
+            className="button inactive"
+            data-tip="Gallery"
+            data-place="right"
+          >
+            <IoImages />
+          </button>
+        )}
+      </div>
+      <div className="playback-bar">
+        <div className="song-infos">
+          {currentSong
+            ? "🎵 " + currentSong.name + " - " + currentSong.artists[0].name
+            : "..."}
+        </div>
+        <div className="playback-controls">
+          <button
+            className="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              previousSong();
+            }}
+          >
+            <IoPlayBack />
+          </button>
+          <button
+            className="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePlayback();
+            }}
+          >
+            {playing ? <IoPause /> : <IoPlay />}
+          </button>
+          <button
+            className="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              nextSong();
+            }}
+          >
+            <IoPlayForward />
+          </button>
+          <button
+            className="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              addToLibrary();
+            }}
+          >
+            {songIsSaved ? <IoHeart /> : <IoHeartOutline />}
           </button>
         </div>
-
-        <div className="menu-bar">
-          <Link to="/">
-            <button className="button" data-tip="Globes" data-place="right">
-              <IoDisc />
-            </button>
-          </Link>
-
-          <Link to="/mood">
-            <button
-              className="button"
-              data-tip="Mood Selector"
-              data-place="right"
-            >
-              <IoAnalytics />
-            </button>
-          </Link>
-          <Link to="/style">
-            <button
-              className="button"
-              data-tip="Style Transfer"
-              data-place="right"
-            >
-              <IoColorPalette />
-            </button>
-          </Link>
-          {gallery.length > 0 ? (
-            <Link to="/gallery">
-              <button className="button" data-tip="Gallery" data-place="right">
-                <IoImages />
-              </button>
-            </Link>
-          ) : (
-            <button
-              className="button inactive"
-              data-tip="Gallery"
-              data-place="right"
-            >
-              <IoImages />
-            </button>
-          )}
-        </div>
-        <div className="playback-bar">
-          <div className="song-infos">
-            {currentSong
-              ? "🎵 " + currentSong.name + " - " + currentSong.artists[0].name
-              : "..."}
-          </div>
-          <div className="playback-controls">
-            <button
-              className="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                previousSong();
-              }}
-            >
-              <IoPlayBack />
-            </button>
-            <button
-              className="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                togglePlayback();
-              }}
-            >
-              {playing ? <IoPause /> : <IoPlay />}
-            </button>
-            <button
-              className="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                nextSong();
-              }}
-            >
-              <IoPlayForward />
-            </button>
-            <button
-              className="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                addToLibrary();
-              }}
-            >
-              {songIsSaved ? <IoHeart /> : <IoHeartOutline />}
-            </button>
-          </div>
-        </div>
       </div>
-    </BrowserRouter>
+    </div>
   );
 }

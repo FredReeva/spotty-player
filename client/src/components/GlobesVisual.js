@@ -27,7 +27,6 @@ class GlobesVisual extends React.Component {
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-      p.windowResized();
       p.textFont(font);
       p.textSize(12);
 
@@ -65,12 +64,12 @@ class GlobesVisual extends React.Component {
   // delete sketch when component unmounts
   componentWillUnmount() {
     this.myP5.remove();
+    console.log(this.myP5);
+    //document.body.removeChild(this.)
   }
 
   render() {
-   
-      return <div ref={this.myRef}></div>;
-
+    return <div ref={this.myRef}></div>;
   }
 }
 

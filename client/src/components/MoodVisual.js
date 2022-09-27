@@ -34,7 +34,7 @@ class MoodVisual extends React.Component {
 
     p.setup = () => {
       p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);
-      p.windowResized();
+
       p.imageMode(p.CENTER);
       p.textFont(font);
       p.textSize(12);
@@ -89,6 +89,9 @@ class MoodVisual extends React.Component {
 
   componentWillUnmount() {
     this.myP5.remove();
+    this.myP5 = null;
+    console.log(this.myP5);
+    this.myRef = null;
   }
 
   render() {

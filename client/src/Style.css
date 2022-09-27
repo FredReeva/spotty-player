@@ -14,6 +14,7 @@ body,
 #app,
 #app > div {
   position: fixed;
+  aspect-ratio: 1 / 1;
   top: 0;
   left: 0;
   width: 100%;
@@ -269,12 +270,18 @@ body,
   align-items: center;
 }
 
+.p5canvas {
+  width: 100%;
+  height: 100%;
+}
+
 .info-page-text {
   position: fixed;
   display: flex;
   flex-direction: column;
   align-items: center;
-  top: 20%;
+  top: 50%;
+  transform: translate(0, -50%);
 }
 
 h1 {
@@ -359,4 +366,33 @@ h1 {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.pulsate {
+  animation: pulsate 4s ease-out;
+  -webkit-animation: pulsate 4s ease-out;
+  animation-iteration-count: infinite;
+  -webkit-animation-iteration-count: infinite;
+}
+@keyframes pulsate {
+  0% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+@-webkit-keyframes pulsate {
+  0% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.1;
+  }
 }
